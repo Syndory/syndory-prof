@@ -16,7 +16,8 @@ class ResourceDetailScreen extends StatefulWidget {
 class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
   ResourceState _state = ResourceState.loading;
   final TextEditingController _searchController = TextEditingController();
-  List<DocumentModel> _documents = [];
+  List<DocumentModel> _allDocuments = [];
+  List<DocumentModel> _filteredDocuments = [];
 
   final List<DocumentModel> _mockDocuments = const [
     DocumentModel(id: '1', title: 'Cours 01 - Introduction SQL', date: '28 avr.', fileSize: '1.2 MB', fileType: 'pdf'),
@@ -28,16 +29,33 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _allDocuments = _mockDocuments;
+    _filteredDocuments = _allDocuments;
     _loadResources();
   }
 
   Future<void> _loadResources() async {
     setState(() => _state = ResourceState.loading);
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 800)); // Simulation chargement
     if (mounted) {
       setState(() {
-        _documents = _mockDocuments;
-        _state = _documents.isEmpty ? ResourceState.empty : ResourceState.success;
+        _state = _filteredDocuments.isEmpty ? ResourceState.empty : ResourceState.success;
+      });
+    }
+  }
+
+  void _onSearchChanged(String query) async {
+    setState(() => _state = ResourceState.loading);
+    
+    // On simule un court délai de recherche pour voir le Shimmer
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (mounted) {
+      setState(() {
+        _filteredDocuments = _allDocuments
+            .where((doc) => doc.title.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+        _state = _filteredDocuments.isEmpty ? ResourceState.empty : ResourceState.success;
       });
     }
   }
@@ -76,6 +94,7 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: TextField(
                     controller: _searchController,
+                    onChanged: _onSearchChanged, // Appelé à chaque modification
                     decoration: InputDecoration(
                       hintText: 'Rechercher un document...',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -111,27 +130,18 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   return DocumentTile(
-                    document: _documents[index],
+                    document: _filteredDocuments[index],
                     onDelete: () {},
                   );
                 },
-                childCount: _documents.length,
+                childCount: _filteredDocuments.length,
               ),
             ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _state = _state == ResourceState.success
-                ? ResourceState.empty
-                : (_state == ResourceState.empty ? ResourceState.loading : ResourceState.success);
-            if (_state == ResourceState.loading) {
-              _loadResources();
-            }
-          });
-        },
+        onPressed: () {}, // Ne fait rien
         backgroundColor: theme.colorScheme.primary,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
