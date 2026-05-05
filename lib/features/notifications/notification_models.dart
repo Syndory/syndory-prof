@@ -144,7 +144,7 @@ class AppNotification {
   }
 }
 
-extension NotificationCategoryParse on NotificationCategoryExtension {
+class NotificationCategoryParse {
   static NotificationCategory parse(dynamic source) {
     return _parseNotificationCategory(source);
   }
