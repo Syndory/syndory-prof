@@ -16,7 +16,6 @@ class AppBootstrap extends StatelessWidget {
       theme: AppTheme.light,
       debugShowCheckedModeBanner: false,
       builder: (context, child) => child ?? const SizedBox.shrink(),
-      home: const MainScaffold(),
       home: const _AuthGate(),
     );
   }
@@ -28,7 +27,7 @@ class _AuthGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!SupabaseClientProvider.isInitialized) {
-      return const LoginScreen();
+      return LoginScreen();
     }
 
     return StreamBuilder<AuthState>(
@@ -40,7 +39,7 @@ class _AuthGate extends StatelessWidget {
         if (session != null) {
           return const HomeScreen();
         }
-        return const LoginScreen();
+        return LoginScreen();
       },
     );
   }
