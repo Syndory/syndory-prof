@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../home/widgets/dashboard_with_next_session_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -25,6 +26,17 @@ class LoginScreen extends StatelessWidget {
                 // TODO: Implémenter la logique de connexion
               },
               child: const Text('Se connecter'),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (_) => const DashboardWithNextSessionScreen(),
+                  ),
+                );
+              },
+              child: const Text('Tester le dashboard'),
             ),
           ],
         ),
