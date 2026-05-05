@@ -51,3 +51,9 @@ macos/Flutter/ephemeral/
 
 # Direnv
 .envrc
+
+# Flutter DevTools
+devtools_options.yaml
+
+# Web platform (mobile only)
+web/
