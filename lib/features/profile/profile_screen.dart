@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syndory_prof/data/supabase/supabase_client.dart';
 import '../auth/placeholder.dart';
 import '../notifications/notifications_screen.dart';
+import '../notifications/notification_service.dart';
 
 enum ProfileUiState {
   loaded,
@@ -1000,12 +1001,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_none,
-              color: Color(0xFF4F4F4F),
-            ),
-            onPressed: _openNotifications,
+          ValueListenableBuilder<int>(
+            valueListenable: NotificationService().unreadCount,
+            builder: (context, count, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.notifications_none,
+                      color: Color(0xFF4F4F4F),
+                    ),
+                    onPressed: _openNotifications,
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 12,
+                      top: 12,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEB5757),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          count > 9 ? '9+' : count.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           IconButton(
             icon: Icon(

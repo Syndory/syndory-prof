@@ -2,6 +2,7 @@
 
 ## 2026-05-05 (Mouwafic)
 
+- `feat(notifications)`: implémentation du `NotificationService` (Supabase Realtime) et ajout du badge temps-réel sur `ProfileScreen`.
 - Ajout d'un AuthGate base sur Supabase (session + stream) pour garder le backend stable.
 - Ajout d'AuthRoutes comme point d'integration du futur ecran de login officiel.
 - Affichage d'un bouton "Ouvrir Debug / Health" sur le placeholder.
