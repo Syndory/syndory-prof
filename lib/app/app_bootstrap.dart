@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'theme/app_theme.dart';
-import '../features/debug_health/debug_health_screen.dart';
+import '../features/resources/screens/resource_detail_screen.dart';
 
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});
@@ -10,9 +10,9 @@ class AppBootstrap extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Syndory Prof',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      builder: (context, child) => child ?? const SizedBox.shrink(),
-      home: const DebugHealthScreen(),
+      home: const ResourceDetailScreen(),
     );
   }
 }
