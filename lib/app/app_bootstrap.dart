@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'theme/app_theme.dart';
-import '../features/debug_health/debug_health_screen.dart';
+import '../shared/widgets/main_scaffold.dart';
 
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});
@@ -12,7 +12,7 @@ class AppBootstrap extends StatelessWidget {
       title: 'Syndory Prof',
       theme: AppTheme.light,
       builder: (context, child) => child ?? const SizedBox.shrink(),
-      home: const DebugHealthScreen(),
+      home: const MainScaffold(),
     );
   }
 }
