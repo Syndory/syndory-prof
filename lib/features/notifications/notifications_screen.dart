@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:syndory_prof/data/supabase/supabase_client.dart';
 import 'notification_models.dart';
@@ -55,7 +56,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         SupabaseClientProvider.client.auth.currentSession != null;
     
     if (_useBackend) {
-      NotificationService().initialize();
+      unawaited(_initNotificationsService());
+    }
+  }
+
+  Future<void> _initNotificationsService() async {
+    try {
+      await NotificationService().initialize();
+    } catch (e) {
+      debugPrint('Error initializing notifications: $e');
     }
   }
 

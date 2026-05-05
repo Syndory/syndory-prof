@@ -18,18 +18,24 @@ class NotificationService {
 
   RealtimeChannel? _subscription;
   bool _isInitialized = false;
+  String? _currentUserId;
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
-
-    if (!SupabaseClientProvider.isInitialized) {
-      return;
-    }
+    if (!SupabaseClientProvider.isInitialized) return;
 
     final session = SupabaseClientProvider.client.auth.currentSession;
     if (session == null) return;
 
     final userId = session.user.id;
+
+    // Si un autre utilisateur était connecté, réinitialiser complètement
+    if (_isInitialized && _currentUserId != userId) {
+      reset();
+    }
+
+    if (_isInitialized) return;
+
+    _currentUserId = userId;
 
     // Load initial data
     await loadNotifications();
@@ -68,12 +74,17 @@ class NotificationService {
     _isInitialized = true;
   }
 
-  void dispose() {
+  void reset() {
     _subscription?.unsubscribe();
     _subscription = null;
     _isInitialized = false;
+    _currentUserId = null;
     notifications.value = [];
     unreadCount.value = 0;
+  }
+
+  void dispose() {
+    reset();
   }
 
   Future<void> loadNotifications() async {
