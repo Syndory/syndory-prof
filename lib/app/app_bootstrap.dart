@@ -31,6 +31,7 @@ class AppBootstrap extends StatelessWidget {
 
     return MaterialApp(
       title: 'Syndory Prof',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       onGenerateRoute: AuthRoutes.onGenerateRoute,
       builder: (context, child) => child ?? const SizedBox.shrink(),
