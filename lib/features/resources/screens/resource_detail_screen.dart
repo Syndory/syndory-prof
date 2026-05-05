@@ -14,11 +14,32 @@ class ResourceDetailScreen extends StatefulWidget {
 }
 
 class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
+  ResourceState _state = ResourceState.loading;
   final TextEditingController _searchController = TextEditingController();
+  List<DocumentModel> _documents = [];
+
+  final List<DocumentModel> _mockDocuments = const [
+    DocumentModel(id: '1', title: 'Cours 01 - Introduction SQL', date: '28 avr.', fileSize: '1.2 MB', fileType: 'pdf'),
+    DocumentModel(id: '2', title: 'TD 02 - Modélisation E/R', date: '25 avr.', fileSize: '850 KB', fileType: 'pdf'),
+    DocumentModel(id: '3', title: 'Projet de groupe - Consignes', date: '20 avr.', fileSize: '450 KB', fileType: 'docx'),
+    DocumentModel(id: '4', title: 'Annales Exam 2023', date: '15 avr.', fileSize: '2.1 MB', fileType: 'pdf'),
+  ];
 
   @override
   void initState() {
     super.initState();
+    _loadResources();
+  }
+
+  Future<void> _loadResources() async {
+    setState(() => _state = ResourceState.loading);
+    await Future.delayed(const Duration(seconds: 2));
+    if (mounted) {
+      setState(() {
+        _documents = _mockDocuments;
+        _state = _documents.isEmpty ? ResourceState.empty : ResourceState.success;
+      });
+    }
   }
 
   @override
@@ -48,7 +69,7 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
                 const SubjectHeaderCard(
                   category: 'SCIENCES & TECHNOLOGIES',
                   title: 'Bases de données',
-                  documentCount: 0,
+                  documentCount: 7,
                   classCount: 2,
                 ),
                 Padding(
@@ -73,15 +94,48 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
               ],
             ),
           ),
-          // On ne garde que le Shimmer (État de chargement)
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) => const DocumentTileShimmer(),
-              childCount: 4,
+          if (_state == ResourceState.loading)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const DocumentTileShimmer(),
+                childCount: 4,
+              ),
+            )
+          else if (_state == ResourceState.empty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildEmptyState(theme),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return DocumentTile(
+                    document: _documents[index],
+                    onDelete: () {},
+                  );
+                },
+                childCount: _documents.length,
+              ),
             ),
-          ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _state = _state == ResourceState.success
+                ? ResourceState.empty
+                : (_state == ResourceState.empty ? ResourceState.loading : ResourceState.success);
+            if (_state == ResourceState.loading) {
+              _loadResources();
+            }
+          });
+        },
+        backgroundColor: theme.colorScheme.primary,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 3,
