@@ -4,21 +4,38 @@ import 'theme/app_theme.dart';
 import 'env/app_env.dart';
 import 'errors/missing_supabase_config_screen.dart';
 import '../features/auth/auth_routes.dart';
-import '../features/auth/auth_gate.dart';
+import '../features/auth/placeholder.dart';
+import '../features/profile/profile_screen.dart';
+import '../features/resources/resources_screen.dart';
+
+
+const bool _devProfilePreview = bool.fromEnvironment('DEV_PROFILE_PREVIEW');
+
+
+const bool _devResourcesPreview =
+    bool.fromEnvironment('DEV_RESOURCES_PREVIEW');
 
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final Widget home;
+    if (_devResourcesPreview) {
+      home = const ResourcesScreen();
+    } else if (_devProfilePreview) {
+      home = const ProfileScreen();
+    } else {
+      home = const AuthGate();
+    }
+
     return MaterialApp(
       title: 'Syndory Prof',
       theme: AppTheme.light,
       onGenerateRoute: AuthRoutes.onGenerateRoute,
       builder: (context, child) => child ?? const SizedBox.shrink(),
-      home: AppEnv.hasSupabaseConfig
-          ? const AuthGate()
-          : const MissingSupabaseConfigScreen(),
+      onGenerateRoute: AuthRoutes.onGenerateRoute,
+      home: home,
     );
   }
 }
