@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syndory_prof/data/supabase/supabase_client.dart';
 import '../auth/placeholder.dart';
+import '../notifications/notifications_screen.dart';
 
 enum ProfileUiState {
   loaded,
@@ -248,6 +249,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       setState(() => _state = ProfileUiState.loaded);
     }
+  }
+
+  void _openNotifications() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const NotificationsScreen(),
+      ),
+    );
   }
 
   Future<_Assignments> _loadAssignments(String userId) async {
@@ -996,7 +1005,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Icons.notifications_none,
               color: Color(0xFF4F4F4F),
             ),
-            onPressed: () {},
+            onPressed: _openNotifications,
           ),
           IconButton(
             icon: Icon(
