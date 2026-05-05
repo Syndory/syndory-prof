@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:syndory_prof/accueil/accueil_error.dart';
 
 import 'app/env/app_env.dart';
 import 'app/app_bootstrap.dart';

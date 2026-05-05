@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'theme/app_theme.dart';
+import '../shared/widgets/main_scaffold.dart';
 import '../data/supabase/supabase_client.dart';
 import '../features/auth/login_screen.dart';
 import '../features/home/home_screen.dart';
@@ -15,6 +16,7 @@ class AppBootstrap extends StatelessWidget {
       theme: AppTheme.light,
       debugShowCheckedModeBanner: false,
       builder: (context, child) => child ?? const SizedBox.shrink(),
+      home: const MainScaffold(),
       home: const _AuthGate(),
     );
   }
