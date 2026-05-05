@@ -49,5 +49,9 @@ macos/Flutter/ephemeral/
 .env.*
 !.env.example
 
+# Dev auth artifacts
+sup_signin.json
+sup_signin*.json
+
 # Direnv
 .envrc

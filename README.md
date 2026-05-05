@@ -67,6 +67,25 @@ flutter build apk --release \
   --dart-define=SUPABASE_ANON_KEY=<anon-key>
 ```
 
+### Lancer localement
+
+Si vous stockez vos valeurs localement (fichier `.env`), injectez-les dans la
+commande `flutter run` via `--dart-define`. Exemple d'utilisation manuelle :
+
+```bash
+flutter run -d <device-id> \
+  --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=<anon-key>
+```
+
+Remarques de sécurité :
+
+- Ne commitez jamais de clés réelles. Utilisez `.env` local non tracké ou des
+  variables d'environnement en CI.
+- Côté client, n'utilisez que `SUPABASE_ANON_KEY`. Toute `SERVICE_ROLE` key doit
+  rester côté serveur (Edge Functions / backend) et être rotatée si elle est
+  exposée.
+
 ## Lancer l’application
 
 - Installer les dépendances :
