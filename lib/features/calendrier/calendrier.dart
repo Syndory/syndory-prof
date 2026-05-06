@@ -21,7 +21,7 @@ class _CalendrierState extends State<Calendrier> {
   //   CalendrierEtat.normal      → vue normale avec les séances
   //   CalendrierEtat.semaineVide → semaine sans séances
   //   CalendrierEtat.erreur      → erreur de chargement
-  CalendrierEtat _etat = CalendrierEtat.normal;
+  CalendrierEtat _etat = CalendrierEtat.erreur;
 
   String get weekLabel {
     final weekEnd = currentWeekStart.add(const Duration(days: 6));
@@ -123,7 +123,7 @@ class _CalendrierState extends State<Calendrier> {
                 border: Border.all(color: const Color(0xFFEEEEEE)),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.chevron_left, size: 20),
