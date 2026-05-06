@@ -6,13 +6,9 @@ import '../features/auth/placeholder.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/resources/resources_screen.dart';
 
-
 const bool _devProfilePreview = bool.fromEnvironment('DEV_PROFILE_PREVIEW');
-
-
 const bool _devResourcesPreview =
     bool.fromEnvironment('DEV_RESOURCES_PREVIEW');
-
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});
 
@@ -29,6 +25,7 @@ class AppBootstrap extends StatelessWidget {
 
     return MaterialApp(
       title: 'Syndory Prof',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       builder: (context, child) => child ?? const SizedBox.shrink(),
       onGenerateRoute: AuthRoutes.onGenerateRoute,
