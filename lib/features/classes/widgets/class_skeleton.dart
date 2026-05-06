@@ -30,9 +30,10 @@ class _PulseSkeletonState extends State<PulseSkeleton>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 0.3, end: 0.6).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0.3,
+      end: 0.6,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -51,7 +52,9 @@ class _PulseSkeletonState extends State<PulseSkeleton>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: const Color(0xFFE0E0E0).withValues(alpha: _animation.value), // --gray5
+            color: const Color(
+              0xFFE0E0E0,
+            ).withValues(alpha: _animation.value), // --gray5
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
         );
@@ -96,7 +99,11 @@ class ClassSkeleton extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    PulseSkeleton(width: 150, height: 20, margin: EdgeInsets.only(bottom: 8)),
+                    PulseSkeleton(
+                      width: 150,
+                      height: 20,
+                      margin: EdgeInsets.only(bottom: 8),
+                    ),
                     PulseSkeleton(width: 100, height: 14),
                   ],
                 ),
@@ -106,7 +113,7 @@ class ClassSkeleton extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Subjects Chips Skeleton
           const Row(
             children: [
@@ -118,8 +125,16 @@ class ClassSkeleton extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Attendance Skeleton
-          const PulseSkeleton(width: double.infinity, height: 14, margin: EdgeInsets.only(bottom: 8)),
-          const PulseSkeleton(width: double.infinity, height: 6, borderRadius: 9999),
+          const PulseSkeleton(
+            width: double.infinity,
+            height: 14,
+            margin: EdgeInsets.only(bottom: 8),
+          ),
+          const PulseSkeleton(
+            width: double.infinity,
+            height: 6,
+            borderRadius: 9999,
+          ),
         ],
       ),
     );
