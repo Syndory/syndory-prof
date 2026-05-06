@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../classes/models/models.dart';
 import '../classes/effectifs_screen.dart';
+import 'active_session_screen.dart';
+
 
 class PreSessionScreen extends StatefulWidget {
   final ClassModel classInfo;
@@ -405,10 +407,27 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: isSessionAlreadyOpen ? () {
-                      // Navigate to active session
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ActiveSessionScreen(
+                            classInfo: widget.classInfo,
+                            initialTimerMinutes: _markingWindow,
+                          ),
+                        ),
+                      );
                     } : () {
-                      // Navigate to active session
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ActiveSessionScreen(
+                            classInfo: widget.classInfo,
+                            initialTimerMinutes: _markingWindow,
+                          ),
+                        ),
+                      );
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isSessionAlreadyOpen ? gray5 : primary,
                       foregroundColor: isSessionAlreadyOpen ? gray3 : Colors.white,
@@ -431,8 +450,17 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: () {
-                        // Navigate to active session
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ActiveSessionScreen(
+                              classInfo: widget.classInfo,
+                              initialTimerMinutes: _markingWindow,
+                            ),
+                          ),
+                        );
                       },
+
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: primary),
                         foregroundColor: primary,
