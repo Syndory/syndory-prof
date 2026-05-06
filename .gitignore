@@ -3,7 +3,11 @@
 .packages
 .pub/
 build/
+**/build/
 coverage/
+
+# Node
+node_modules/
 
 # IntelliJ / Android Studio
 .idea/
@@ -36,13 +40,22 @@ android/key.properties
 *.jks
 *.keystore
 
-# iOS / macOS
-ios/Flutter/Flutter.framework
-ios/Flutter/Flutter.podspec
-ios/Flutter/Generated.xcconfig
-ios/Flutter/ephemeral/
-macos/Flutter/ephemeral/
-linux/flutter/ephemeral/
+# iOS / macOS / Linux Flutter generated
+ios/Flutter/
+macos/Flutter/
+linux/flutter/
+
+# iOS / macOS Runner (non-Android platforms, mobile app cible Android)
+ios/Runner/
+ios/Runner.xcodeproj/
+ios/Runner.xcworkspace/
+ios/RunnerTests/
+ios/.gitignore
+macos/Runner/
+macos/Runner.xcodeproj/
+macos/Runner.xcworkspace/
+macos/RunnerTests/
+macos/.gitignore
 
 # Logs
 *.log
@@ -58,6 +71,20 @@ sup_signin*.json
 
 # Direnv
 .envrc
+
+# Flutter DevTools
+devtools_options.yaml
+
+# Web/Windows/Desktop platforms (mobile only)
+web/
+windows/
+
+# Node (Edge Functions local dev)
+package.json
+package-lock.json
+
+# Dev Supabase query artifacts
+sup_test*.json
 
 # HTML specs
 PROF-07a-mes-classes/
