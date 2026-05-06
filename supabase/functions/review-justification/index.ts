@@ -38,7 +38,10 @@ serve(async (req) => {
     const { justificatif_id, decision, rejection_reason } = await req.json()
 
     if (!justificatif_id || !decision) {
-      return new Response('Missing fields', { status: 400 })
+      return new Response('Missing fields', {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'text/plain; charset=utf-8' },
+      })
     }
 
     const allowedDecisions = ['validé', 'rejeté']
