@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'placeholder.dart';
+import 'login_screen.dart';
 
 abstract final class AuthRoutes {
   static const String login = '/auth/login';
 
   static Widget loginScreen(BuildContext context) {
-    return const AuthPlaceholderScreen();
+    return const LoginScreen();
   }
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
