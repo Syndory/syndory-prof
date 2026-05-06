@@ -32,8 +32,8 @@ class JustificationRepository {
 
   /// Valide ou rejette un justificatif via l'Edge Function `review-justification`.
   ///
-  /// [decision] : `'validé'` ou `'rejeté'`
-  /// [rejectionReason] : obligatoire si decision == 'rejeté'
+  /// [decision] : `'valide'` ou `'rejete'`
+  /// [rejectionReason] : obligatoire si decision == 'rejete'
   Future<void> review({
     required String justificatifId,
     required String decision,
@@ -51,12 +51,10 @@ class JustificationRepository {
       body: body,
     );
 
-    // FunctionResponse lève une exception si le status >= 400.
-    // On relance explicitement si le body contient une erreur.
     if (response.status != null && response.status! >= 400) {
       final data = response.data;
       final message = (data is Map ? data['error'] ?? data['message'] : null)
-          ?.toString() ??
+              ?.toString() ??
           'Erreur lors du traitement du justificatif.';
       throw Exception(message);
     }
