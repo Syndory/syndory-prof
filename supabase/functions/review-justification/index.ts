@@ -57,7 +57,7 @@ serve(async (req) => {
       .single()
 
     if (!profile || profile.role !== 'professor') {
-      return new Response('Forbidden', { status: 403 })
+      return new Response('Forbidden', { status: 403, headers: corsHeaders })
     }
 
     // 🔎 4. VERIFY OWNERSHIP
