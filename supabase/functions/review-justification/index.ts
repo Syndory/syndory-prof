@@ -41,6 +41,11 @@ serve(async (req) => {
       return new Response('Missing fields', { status: 400 })
     }
 
+    const allowedDecisions = ['validé', 'rejeté']
+    if (typeof decision !== 'string' || !allowedDecisions.includes(decision)) {
+      return new Response('Invalid decision', { status: 400 })
+    }
+
     // 👤 3. ROLE CHECK
     const { data: profile } = await supabase
       .from('profiles')
