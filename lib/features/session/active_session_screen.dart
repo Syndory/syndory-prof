@@ -20,6 +20,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
   late int _secondsRemaining;
   late Timer _timer;
   bool _isClosed = false;
+  bool _showClosureModal = false;
+
 
   @override
   void initState() {
@@ -273,6 +275,110 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                             ),
                           ),
                         ),
+          
+          // Closure Confirmation Modal
+          if (_showClosureModal && !_isClosed)
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () => setState(() => _showClosureModal = false),
+                child: Container(
+                  color: Colors.black.withOpacity(0.6),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () {}, // Prevent closing when tapping modal
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(24),
+                              topRight: Radius.circular(24),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Clore la session ?',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: primary,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Êtes-vous sûr de vouloir clore la session ? Les étudiants n\'ayant pas marqué seront enregistrés comme absents.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: gray2,
+                                  lineHeight: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Column(
+                                children: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _showClosureModal = false;
+                                        _isClosed = true;
+                                        _timer.cancel();
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: error,
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size(double.infinity, 56),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(9999),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Clore la session',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _showClosureModal = false;
+                                      });
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: gray5),
+                                      foregroundColor: gray2,
+                                      minimumSize: const Size(double.infinity, 56),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(9999),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Annuler',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
 
                         // Student List
                         Padding(
@@ -348,10 +454,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
               child: ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _isClosed = true;
-                    _timer.cancel();
+                    _showClosureModal = true;
                   });
                 },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: error,
                   foregroundColor: Colors.white,
