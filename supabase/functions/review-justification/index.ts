@@ -31,7 +31,7 @@ serve(async (req) => {
     } = await supabase.auth.getUser(token)
 
     if (authError || !user) {
-      return new Response('Invalid token', { status: 401 })
+      return new Response('Invalid token', { status: 401, headers: corsHeaders })
     }
 
     // 📦 2. BODY
