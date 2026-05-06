@@ -5,11 +5,14 @@ import '../widgets/subject_header_card.dart';
 import '../widgets/document_tile.dart';
 import '../widgets/document_tile_shimmer.dart';
 import '../screens/add_document_screen.dart';
+import '../models/resources_models.dart';
 
 enum ResourceState { loading, empty, success }
 
 class ResourceDetailScreen extends StatefulWidget {
-  const ResourceDetailScreen({super.key});
+  final SubjectResource subject;
+
+  const ResourceDetailScreen({super.key, required this.subject});
 
   @override
   State<ResourceDetailScreen> createState() => _ResourceDetailScreenState();
@@ -105,7 +108,7 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
           icon: const Icon(Icons.chevron_left),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Bases de données', style: TextStyle(color: AppTheme.primaryBlue),),
+        title: Text(widget.subject.title, style: const TextStyle(color: AppTheme.primaryBlue)),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none),
@@ -118,11 +121,11 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                const SubjectHeaderCard(
+                SubjectHeaderCard(
                   category: 'SCIENCES & TECHNOLOGIES',
-                  title: 'Bases de données',
-                  documentCount: 7,
-                  classCount: 2,
+                  title: widget.subject.title,
+                  documentCount: widget.subject.documentCount,
+                  classCount: widget.subject.classTags.length,
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -179,7 +182,10 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
           // Affichage de la page d'ajout d'un document
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddDocumentScreen()),
+            MaterialPageRoute(
+              // On passe le titre récupéré de la page précédente
+              builder: (context) => AddDocumentScreen(subjectTitle: widget.subject.title),
+            ),
           );
 
           // Si on a reçu un document (le résultat n'est pas nul)

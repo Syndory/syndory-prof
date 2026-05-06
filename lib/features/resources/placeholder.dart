@@ -1,4 +1,4 @@
 library;
 
-export 'resources_screen.dart';
-export 'resources_models.dart';
+export 'screens/resources_screen.dart';
+export 'models/resources_models.dart';
