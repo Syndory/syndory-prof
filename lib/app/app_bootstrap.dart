@@ -7,7 +7,7 @@ import '../features/auth/placeholder.dart';
 import '../app/navigation/main_shell.dart';
 import '../features/justifications/justification_list_page.dart';
 
-// Flag DEV pour prévisualiser les justificatifs sans passer par l'auth
+// Flag DEV pour preview des justificatifs
 const bool _devJustifPreview = bool.fromEnvironment('DEV_JUSTIF_PREVIEW');
 
 class AppBootstrap extends StatelessWidget {
