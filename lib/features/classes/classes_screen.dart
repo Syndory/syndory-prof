@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'effectifs_screen.dart';
 import 'models/models.dart';
@@ -106,14 +108,14 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   void _simulateInitialLoad() {
     // 1. Initial loading for 1.5s
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    unawaited(Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
         // 2. Fail the first time to show the error state
         setState(() {
           _state = ClassesUiState.error;
         });
       }
-    });
+    }));
   }
 
   void _onRetry() {
@@ -122,14 +124,14 @@ class _ClassesScreenState extends State<ClassesScreen> {
     });
 
     // 3. Retry loading for a shorter time (0.8s)
-    Future.delayed(const Duration(milliseconds: 800), () {
+    unawaited(Future.delayed(const Duration(milliseconds: 800), () {
       if (mounted) {
         // 4. Succeed and show data
         setState(() {
           _state = ClassesUiState.loaded;
         });
       }
-    });
+    }));
   }
 
   Widget _buildContent() {
