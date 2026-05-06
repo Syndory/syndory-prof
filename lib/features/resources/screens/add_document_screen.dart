@@ -134,7 +134,14 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
               // ZONE FICHIER
               const FormLabel(label: "Fichier"),
               const SizedBox(height: 10),
-              const UploadZone(),
+              UploadZone(
+                onFileSelected: (name) {
+                  setState(() {
+                    String nameWithoutExtension = name.split('.').first;
+                    _titreController.text = nameWithoutExtension;
+                  });
+                },
+              ),
               const SizedBox(height: 25),
 
               // TITRE
