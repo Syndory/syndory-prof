@@ -1,14 +1,51 @@
 import 'package:flutter/material.dart';
 import 'models/models.dart';
 import 'widgets/student_card.dart';
+import 'widgets/state_box.dart';
 
-class EffectifsScreen extends StatelessWidget {
+class EffectifsScreen extends StatefulWidget {
   final ClassModel classInfo;
 
   const EffectifsScreen({super.key, required this.classInfo});
 
   @override
+  State<EffectifsScreen> createState() => _EffectifsScreenState();
+}
+
+class _EffectifsScreenState extends State<EffectifsScreen> {
+  late TextEditingController _searchController;
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<StudentModel> get _filteredStudents {
+    if (_searchQuery.isEmpty) {
+      return widget.classInfo.students;
+    }
+    return widget.classInfo.students
+        .where(
+          (student) =>
+              student.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
+        .toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final students = _filteredStudents;
+    final isClassEmpty = widget.classInfo.students.isEmpty;
+    final isSearchEmpty = students.isEmpty && _searchQuery.isNotEmpty;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // --bg
       appBar: AppBar(
@@ -41,7 +78,7 @@ class EffectifsScreen extends StatelessWidget {
           ),
         ),
         title: Text(
-          classInfo.title,
+          widget.classInfo.title,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -102,7 +139,7 @@ class EffectifsScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    classInfo.title,
+                    widget.classInfo.title,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -111,7 +148,7 @@ class EffectifsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    classInfo.filiere,
+                    widget.classInfo.filiere,
                     style: const TextStyle(
                       fontSize: 13,
                       color: Color(0xFF4F4F4F),
@@ -145,7 +182,7 @@ class EffectifsScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              classInfo.studentCount.toString(),
+                              widget.classInfo.studentCount.toString(),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
@@ -156,7 +193,7 @@ class EffectifsScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      ...classInfo.subjects.map(
+                      ...widget.classInfo.subjects.map(
                         (subject) => Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: Container(
@@ -193,96 +230,118 @@ class EffectifsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Tools Bar
-            Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: const Color(0xFFE0E0E0)),
-                    borderRadius: BorderRadius.circular(9999),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
-                        offset: const Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.search,
-                        color: Color(0xFFBDBDBD),
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Rechercher par nom...',
-                            hintStyle: TextStyle(
-                              color: Color(0xFFBDBDBD),
-                              fontSize: 14,
+            // Tools Bar (only if class is not empty)
+            if (!isClassEmpty) ...[
+              Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      borderRadius: BorderRadius.circular(9999),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          offset: const Offset(0, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.search,
+                          color: Color(0xFFBDBDBD),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              hintText: 'Rechercher par nom...',
+                              hintStyle: TextStyle(
+                                color: Color(0xFFBDBDBD),
+                                fontSize: 14,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
                             ),
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.zero,
                           ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Text(
+                        'Tri par :',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF828282),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () {},
+                        child: const Row(
+                          children: [
+                            Text(
+                              'Nom A→Z',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF092C4C),
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Color(0xFF092C4C),
+                              size: 12,
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Text(
-                      'Tri par :',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF828282),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Row(
-                        children: [
-                          const Text(
-                            'Nom A→Z',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF092C4C),
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Color(0xFF092C4C),
-                            size: 12,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
 
-            // Student List
-            Column(
-              children: classInfo.students
-                  .map((student) => StudentCard(student: student))
-                  .toList(),
-            ),
+            // Student List or Empty States
+            if (isClassEmpty)
+              const StateBox(
+                icon: Icons.people_outline,
+                title: 'Aucun étudiant',
+                description:
+                    'Aucun étudiant n\'est inscrit dans cette classe pour le moment.',
+              )
+            else if (isSearchEmpty)
+              StateBox(
+                icon: Icons.search,
+                title: 'Aucun résultat',
+                description: 'Aucun étudiant correspondant à "$_searchQuery".',
+              )
+            else
+              Column(
+                children: students
+                    .map((student) => StudentCard(student: student))
+                    .toList(),
+              ),
           ],
         ),
       ),
