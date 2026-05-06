@@ -80,7 +80,7 @@ serve(async (req) => {
     const profId = presence?.sessions?.seances?.professor_id
 
     if (profId !== user.id) {
-      return new Response('Forbidden', { status: 403 })
+      return new Response('Forbidden', { status: 403, headers: corsHeaders })
     }
 
     // 🛠️ 5. VALIDATION MÉTIER VIA RPC
