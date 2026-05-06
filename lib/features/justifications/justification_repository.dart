@@ -46,10 +46,15 @@ class JustificationRepository {
         'rejection_reason': rejectionReason,
     };
 
-    final response = await SupabaseClientProvider.callEdgeFunction(
-      'review-justification',
-      body: body,
-    );
+    final session = SupabaseClientProvider.client.auth.currentSession;
+
+final response = await SupabaseClientProvider.client.functions.invoke(
+  'review-justification',
+  body: body,
+  headers: {
+    'Authorization': 'Bearer ${session?.accessToken}',
+  },
+);
 
     if (response.status != null && response.status! >= 400) {
       final data = response.data;

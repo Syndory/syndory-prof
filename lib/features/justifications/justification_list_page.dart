@@ -41,25 +41,31 @@ class _JustificationListPageState extends State<JustificationListPage>
   // ── Données ───────────────────────────────────────────────────────────────
 
   Future<void> _load() async {
+  if (!mounted) return;
+
+  setState(() {
+    _loading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    final data = await _repo.fetchAll();
+
+    if (!mounted) return;
+
     setState(() {
-      _loading = true;
-      _errorMessage = null;
+      _all = data;
+      _loading = false;
     });
-    try {
-      final data = await _repo.fetchAll();
-      if (!mounted) return;
-      setState(() {
-        _all = data;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = e.toString();
-        _loading = false;
-      });
-    }
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() {
+      _errorMessage = e.toString();
+      _loading = false;
+    });
   }
+}
 
   List<JustificationModel> get _enAttente =>
       _all.where((j) => j.statut == JustificationStatut.enAttente).toList();
@@ -70,15 +76,19 @@ class _JustificationListPageState extends State<JustificationListPage>
   // ── Navigation ────────────────────────────────────────────────────────────
 
   Future<void> _openDetail(JustificationModel justification) async {
-    final reviewed = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => JustificationDetailPage(justification: justification),
-      ),
-    );
-    if (reviewed == true) _load();
-  }
+  final reviewed = await Navigator.push<bool>(
+    context,
+    MaterialPageRoute(
+      builder: (_) => JustificationDetailPage(justification: justification),
+    ),
+  );
 
+  if (!mounted) return;
+
+  if (reviewed == true) {
+    await _load();
+  }
+}
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
