@@ -46,10 +46,15 @@ class JustificationRepository {
         'rejection_reason': rejectionReason,
     };
 
-    final response = await SupabaseClientProvider.callEdgeFunction(
-      'review-justification',
-      body: body,
-    );
+    final session = SupabaseClientProvider.client.auth.currentSession;
+
+final response = await SupabaseClientProvider.client.functions.invoke(
+  'review-justification',
+  body: body,
+  headers: {
+    'Authorization': 'Bearer ${session?.accessToken}',
+  },
+);
 
     // FunctionResponse lève une exception si le status >= 400.
     // On relance explicitement si le body contient une erreur.

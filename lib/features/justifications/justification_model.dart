@@ -5,9 +5,9 @@ enum JustificationStatut { enAttente, valide, rejete }
 extension JustificationStatutX on JustificationStatut {
   static JustificationStatut fromString(String? s) {
     switch (s) {
-      case 'validé':
+      case 'valide':
         return JustificationStatut.valide;
-      case 'rejeté':
+      case 'rejete':
         return JustificationStatut.rejete;
       default:
         return JustificationStatut.enAttente;
@@ -17,9 +17,9 @@ extension JustificationStatutX on JustificationStatut {
   String toApiString() {
     switch (this) {
       case JustificationStatut.valide:
-        return 'validé';
+        return 'valide';
       case JustificationStatut.rejete:
-        return 'rejeté';
+        return 'rejete';
       case JustificationStatut.enAttente:
         return 'en_attente';
     }

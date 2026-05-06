@@ -64,17 +64,22 @@ class _JustificationDetailPageState extends State<JustificationDetailPage> {
   }
 
   void _showResult(bool isValidated) {
-    final msg = isValidated ? 'Justificatif validé.' : 'Justificatif refusé.';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor:
-            isValidated ? const Color(0xFF27AE60) : const Color(0xFFEB5757),
-      ),
-    );
-    // Retourne `true` à la liste pour déclencher un rechargement.
-    Navigator.pop(context, true);
-  }
+  if (!mounted) return;
+
+  setState(() => _submitting = false);
+
+  final msg = isValidated ? 'Justificatif validé.' : 'Justificatif refusé.';
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(msg),
+      backgroundColor:
+          isValidated ? const Color(0xFF27AE60) : const Color(0xFFEB5757),
+    ),
+  );
+
+  Navigator.pop(context, true);
+}
 
   void _confirmReview({required String decision}) {
     final isValidation = decision == 'validé';
