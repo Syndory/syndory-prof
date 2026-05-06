@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'effectifs_screen.dart';
+import 'models/models.dart';
 import 'widgets/class_card.dart';
 import 'widgets/class_skeleton.dart';
 import 'widgets/state_box.dart';
@@ -15,6 +16,72 @@ class ClassesScreen extends StatefulWidget {
 
 class _ClassesScreenState extends State<ClassesScreen> {
   ClassesUiState _state = ClassesUiState.loading;
+
+  // Mock Data
+  final List<ClassModel> _classes = [
+    ClassModel(
+      title: 'L3 Informatique',
+      filiere: 'Sciences & Technologies',
+      studentCount: 42,
+      subjects: ['Développement Web', 'Algorithmie II'],
+      attendanceRate: 94,
+      students: [
+        const StudentModel(
+            name: 'Alice Bernard',
+            email: 'alice.bernard@univ.edu',
+            initials: 'AB',
+            attendanceRate: 95),
+        const StudentModel(
+            name: 'Julien Dupont',
+            email: 'julien.dupont@univ.edu',
+            initials: 'JD',
+            attendanceRate: 72),
+        const StudentModel(
+            name: 'Marie Leroy',
+            email: 'marie.leroy@univ.edu',
+            initials: 'ML',
+            attendanceRate: 45),
+        const StudentModel(
+            name: 'Thomas Martin',
+            email: 'thomas.martin@univ.edu',
+            initials: 'TM',
+            attendanceRate: 100),
+      ],
+    ),
+    ClassModel(
+      title: 'M1 Ingénierie Logicielle',
+      filiere: 'Master Informatique',
+      studentCount: 28,
+      subjects: ['Architecture Cloud'],
+      attendanceRate: 78,
+      students: [
+        const StudentModel(
+            name: 'Marc Lefebvre',
+            email: 'marc.lefebvre@univ.edu',
+            initials: 'ML',
+            attendanceRate: 88),
+        const StudentModel(
+            name: 'Sophie Petit',
+            email: 'sophie.petit@univ.edu',
+            initials: 'SP',
+            attendanceRate: 92),
+      ],
+    ),
+    ClassModel(
+      title: 'L2 Math-Info',
+      filiere: 'Sciences & Technologies',
+      studentCount: 65,
+      subjects: ['Bases de données', 'Systèmes'],
+      attendanceRate: 88,
+      students: [
+        const StudentModel(
+            name: 'Jean Rochefort',
+            email: 'jean.rochefort@univ.edu',
+            initials: 'JR',
+            attendanceRate: 82),
+      ],
+    ),
+  ];
 
   @override
   void initState() {
@@ -87,29 +154,26 @@ class _ClassesScreenState extends State<ClassesScreen> {
       case ClassesUiState.loaded:
         return ListView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-          children: const [
-            ClassCard(
-              title: 'L3 Informatique',
-              filiere: 'Sciences & Technologies',
-              studentCount: 42,
-              subjects: ['Développement Web', 'Algorithmie II'],
-              attendanceRate: 94,
-            ),
-            ClassCard(
-              title: 'M1 Ingénierie Logicielle',
-              filiere: 'Master Informatique',
-              studentCount: 28,
-              subjects: ['Architecture Cloud'],
-              attendanceRate: 78,
-            ),
-            ClassCard(
-              title: 'L2 Math-Info',
-              filiere: 'Sciences & Technologies',
-              studentCount: 65,
-              subjects: ['Bases de données', 'Systèmes'],
-              attendanceRate: 88,
-            ),
-          ],
+          children: _classes
+              .map((classModel) => GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              EffectifsScreen(classInfo: classModel),
+                        ),
+                      );
+                    },
+                    child: ClassCard(
+                      title: classModel.title,
+                      filiere: classModel.filiere,
+                      studentCount: classModel.studentCount,
+                      subjects: classModel.subjects,
+                      attendanceRate: classModel.attendanceRate,
+                    ),
+                  ))
+              .toList(),
         );
     }
   }
