@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:syndory_prof/data/supabase/supabase_client.dart';
-import 'justification_models.dart';
+import 'justificatiion_model.dart';
+import 'justification_repository.dart';
 import 'justification_ui_states.dart';
+import 'justification_detail_page.dart';
 
 enum _ScreenState { loading, error, empty, allCaughtUp, loaded }
 
@@ -13,10 +14,12 @@ class JustificationsScreen extends StatefulWidget {
 }
 
 class _JustificationsScreenState extends State<JustificationsScreen> {
+  final _repo = const JustificationRepository();
+
   _ScreenState _state = _ScreenState.loading;
-  List<Justificatif> _items = [];
+  List<JustificationModel> _items = [];
   String? _errorMessage;
-  JustificationStatus? _activeFilter;
+  JustificationStatut? _activeFilter;
 
   @override
   void initState() {
@@ -30,58 +33,19 @@ class _JustificationsScreenState extends State<JustificationsScreen> {
       _errorMessage = null;
     });
 
-    if (!SupabaseClientProvider.isInitialized) {
-      setState(() {
-        _state = _ScreenState.error;
-        _errorMessage = 'Supabase non initialisé.';
-      });
-      return;
-    }
-
-    final session = SupabaseClientProvider.client.auth.currentSession;
-    if (session == null) {
-      setState(() {
-        _state = _ScreenState.error;
-        _errorMessage = 'Session expirée. Reconnectez-vous.';
-      });
-      return;
-    }
-
     try {
-      final professorId = session.user.id;
-
-      final result = await SupabaseClientProvider.client
-          .from('justificatifs')
-          .select(
-            'id, file_url, status, rejection_reason, created_at, '
-            'presences('
-            '  users(first_name, last_name), '
-            '  sessions('
-            '    seances('
-            '      date, '
-            '      classes(name, code), '
-            '      matieres(name, code)'
-            '    )'
-            '  )'
-            ')',
-          )
-          .eq('presences.sessions.seances.professor_id', professorId)
-          .order('created_at', ascending: false);
+      final list = await _repo.fetchAll();
 
       if (!mounted) return;
-
-      final list = (result as List)
-          .cast<Map<String, dynamic>>()
-          .map(Justificatif.fromMap)
-          .toList();
 
       if (list.isEmpty) {
         setState(() => _state = _ScreenState.empty);
         return;
       }
 
-      final hasAnyPending =
-          list.any((j) => j.status == JustificationStatus.enAttente);
+      final hasAnyPending = list.any(
+        (j) => j.statut == JustificationStatut.enAttente,
+      );
 
       setState(() {
         _items = list;
@@ -96,9 +60,9 @@ class _JustificationsScreenState extends State<JustificationsScreen> {
     }
   }
 
-  List<Justificatif> get _filtered {
+  List<JustificationModel> get _filtered {
     if (_activeFilter == null) return _items;
-    return _items.where((j) => j.status == _activeFilter).toList();
+    return _items.where((j) => j.statut == _activeFilter).toList();
   }
 
   @override
@@ -110,11 +74,16 @@ class _JustificationsScreenState extends State<JustificationsScreen> {
         elevation: 0,
         title: const Text(
           'Justificatifs',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Color(0xFF092C4C)),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF092C4C),
+          ),
         ),
         centerTitle: true,
         actions: [
-          if (_state == _ScreenState.loaded || _state == _ScreenState.allCaughtUp)
+          if (_state == _ScreenState.loaded ||
+              _state == _ScreenState.allCaughtUp)
             IconButton(
               icon: const Icon(Icons.refresh, color: Color(0xFF4F4F4F)),
               onPressed: _load,
@@ -133,9 +102,9 @@ class _JustificationsScreenState extends State<JustificationsScreen> {
   Widget _buildFilterBar() {
     final filters = [
       (null, 'Tous'),
-      (JustificationStatus.enAttente, 'En attente'),
-      (JustificationStatus.valide, 'Validés'),
-      (JustificationStatus.rejete, 'Rejetés'),
+      (JustificationStatut.enAttente, 'En attente'),
+      (JustificationStatut.valide, 'Validés'),
+      (JustificationStatut.rejete, 'Rejetés'),
     ];
 
     return SizedBox(
@@ -159,7 +128,9 @@ class _JustificationsScreenState extends State<JustificationsScreen> {
               ),
               backgroundColor: Colors.white,
               side: BorderSide(
-                color: isActive ? const Color(0xFF092C4C) : const Color(0xFFE0E0E0),
+                color: isActive
+                    ? const Color(0xFF092C4C)
+                    : const Color(0xFFE0E0E0),
               ),
               showCheckmark: false,
             ),
@@ -195,7 +166,8 @@ class _JustificationsScreenState extends State<JustificationsScreen> {
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             itemCount: items.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (_, i) => _JustificatifCard(item: items[i]),
+            itemBuilder: (_, i) =>
+                _JustificatifCard(item: items[i], onReviewed: _load),
           ),
         );
     }
@@ -203,155 +175,208 @@ class _JustificationsScreenState extends State<JustificationsScreen> {
 }
 
 class _JustificatifCard extends StatelessWidget {
-  final Justificatif item;
-  const _JustificatifCard({required this.item});
+  final JustificationModel item;
+  final VoidCallback onReviewed;
 
-  String _initials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+  const _JustificatifCard({required this.item, required this.onReviewed});
+
+  Color get _statusColor {
+    switch (item.statut) {
+      case JustificationStatut.enAttente:
+        return const Color(0xFFF2994A);
+      case JustificationStatut.valide:
+        return const Color(0xFF219653);
+      case JustificationStatut.rejete:
+        return const Color(0xFFEB5757);
+    }
+  }
+
+  IconData get _statusIcon {
+    switch (item.statut) {
+      case JustificationStatut.enAttente:
+        return Icons.hourglass_empty_outlined;
+      case JustificationStatut.valide:
+        return Icons.check_circle_outline;
+      case JustificationStatut.rejete:
+        return Icons.cancel_outlined;
+    }
+  }
+
+  String get _statusLabel {
+    switch (item.statut) {
+      case JustificationStatut.enAttente:
+        return 'En attente';
+      case JustificationStatut.valide:
+        return 'Validé';
+      case JustificationStatut.rejete:
+        return 'Rejeté';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final status = item.status;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: status == JustificationStatus.enAttente
-              ? const Color(0xFFF2994A)
-              : const Color(0xFFE0E0E0),
-          width: status == JustificationStatus.enAttente ? 1.5 : 1,
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => JustificationDetailPage(justification: item),
+          ),
+        );
+        onReviewed();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: item.statut == JustificationStatut.enAttente
+                ? const Color(0xFFF2994A)
+                : const Color(0xFFE0E0E0),
+            width: item.statut == JustificationStatut.enAttente ? 1.5 : 1,
+          ),
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: const Color(0xFF092C4C),
-                child: Text(
-                  _initials(item.studentName),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 14),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.studentName,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF092C4C)),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(item.className, style: const TextStyle(fontSize: 12, color: Color(0xFF828282))),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: status.color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(status.icon, size: 13, color: status.color),
-                    const SizedBox(width: 4),
-                    Text(status.label, style: TextStyle(fontSize: 12, color: status.color, fontWeight: FontWeight.w700)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Color(0xFFF0F0F0)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(Icons.menu_book_outlined, size: 14, color: Color(0xFF828282)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(item.subjectName, style: const TextStyle(fontSize: 13, color: Color(0xFF4F4F4F), fontWeight: FontWeight.w500)),
-              ),
-              const Icon(Icons.calendar_today_outlined, size: 14, color: Color(0xFF828282)),
-              const SizedBox(width: 6),
-              Text(item.seanceDate, style: const TextStyle(fontSize: 13, color: Color(0xFF4F4F4F), fontWeight: FontWeight.w500)),
-            ],
-          ),
-          if (item.status == JustificationStatus.rejete &&
-              item.rejectionReason != null &&
-              item.rejectionReason!.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: const Color(0xFFFDECEC), borderRadius: BorderRadius.circular(10)),
-              child: Text(
-                'Motif : ${item.rejectionReason}',
-                style: const TextStyle(fontSize: 12, color: Color(0xFFEB5757), fontStyle: FontStyle.italic),
-              ),
-            ),
-          ],
-          if (item.status == JustificationStatus.enAttente) ...[
-            const SizedBox(height: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               children: [
-                if (item.fileUrl != null)
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {},
-                      icon: const Icon(Icons.attach_file, size: 16),
-                      label: const Text('Voir fichier'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF2F80ED),
-                        side: const BorderSide(color: Color(0xFF2F80ED)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                    ),
-                  ),
-                if (item.fileUrl != null) const SizedBox(width: 8),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.close, size: 16),
-                    label: const Text('Rejeter'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFEB5757),
-                      side: const BorderSide(color: Color(0xFFEB5757)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: const Color(0xFF092C4C),
+                  child: Text(
+                    item.studentInitials,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.check, size: 16),
-                    label: const Text('Valider'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF219653),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.studentFullName,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF092C4C),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.matiereNom ?? 'Matière inconnue',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF828282),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_statusIcon, size: 13, color: _statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        _statusLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _statusColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: Color(0xFFF0F0F0)),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 14,
+                  color: Color(0xFF828282),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  item.dateAbsenceDisplay,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF4F4F4F),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Icon(
+                  Icons.access_time_outlined,
+                  size: 14,
+                  color: Color(0xFF828282),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  item.creneauxDisplay,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF4F4F4F),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            if (item.statut == JustificationStatut.rejete &&
+                item.rejectionReason != null &&
+                item.rejectionReason!.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFDECEC),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'Motif : ${item.rejectionReason}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFEB5757),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
+            if (item.statut == JustificationStatut.enAttente) ...[
+              const SizedBox(height: 8),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.chevron_right, color: Color(0xFF828282), size: 20),
+                  Text(
+                    'Voir détails',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF828282)),
+                  ),
+                ],
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
