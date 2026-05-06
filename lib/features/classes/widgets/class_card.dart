@@ -165,22 +165,15 @@ class ClassCard extends StatelessWidget {
               color: const Color(0xFFE0E0E0),
               borderRadius: BorderRadius.circular(9999),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: attendanceRate.round(),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: progressColor,
-                      borderRadius: BorderRadius.circular(9999),
-                    ),
-                  ),
+            child: FractionallySizedBox(
+              widthFactor: attendanceRate.clamp(0.0, 100.0) / 100.0,
+              alignment: Alignment.centerLeft,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: progressColor,
+                  borderRadius: BorderRadius.circular(9999),
                 ),
-                Expanded(
-                  flex: 100 - attendanceRate.round(),
-                  child: const SizedBox(),
-                ),
-              ],
+              ),
             ),
           ),
         ],
