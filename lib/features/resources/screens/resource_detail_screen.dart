@@ -6,8 +6,9 @@ import '../widgets/document_tile.dart';
 import '../widgets/document_tile_shimmer.dart';
 import '../screens/add_document_screen.dart';
 import '../models/resources_models.dart';
+import '../widgets/error_state.dart';
 
-enum ResourceState { loading, empty, success }
+enum ResourceState { loading, empty, success, error }
 
 class ResourceDetailScreen extends StatefulWidget {
   final SubjectResource subject;
@@ -65,15 +66,24 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
 
   Future<void> _loadResources() async {
     setState(() => _state = ResourceState.loading);
-    await Future.delayed(
-      const Duration(milliseconds: 800),
-    ); // Simulation chargement
-    if (mounted) {
-      setState(() {
-        _state = _filteredDocuments.isEmpty
-            ? ResourceState.empty
-            : ResourceState.success;
-      });
+    
+    try {
+      // Simulation du délai réseau
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      // throw Exception("Erreur de connexion");
+
+      if (mounted) {
+        setState(() {
+          _state = _allDocuments.isEmpty
+              ? ResourceState.empty
+              : ResourceState.success;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _state = ResourceState.error);
+      }
     }
   }
 
@@ -159,6 +169,14 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
                 (context, index) => const DocumentTileShimmer(),
                 childCount: 4,
               ),
+            )
+          else if (_state == ResourceState.error)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: ErrorStateWidget(
+                title: 'Erreur de chargement',
+                message: 'Impossible de récupérer la liste des documents.', 
+              ), 
             )
           else if (_state == ResourceState.empty)
             SliverFillRemaining(
@@ -246,6 +264,7 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
   }
 
   Widget _buildEmptyState(ThemeData theme) {
+    final bool isSearching = _searchController.text.isNotEmpty;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -263,30 +282,32 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.insert_drive_file_outlined,
+            child: Icon(
+              isSearching ? Icons.search : Icons.insert_drive_file_outlined,
               size: 48,
-              color: Color(0xFFC7C7CC),
+              color: const Color(0xFFC7C7CC),
             ),
           ),
           const SizedBox(height: 32),
           Text(
-            'Aucun document',
-            style: theme.textTheme.titleLarge?.copyWith(
+            isSearching ? 'Aucun résultat' : 'Aucun document',
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 20,
-              color: const Color(0xFF1A1A1A),
+              color: Color(0xFF1A2E5A),
             ),
           ),
           const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 50.0),
             child: Text(
-              "Vous n'avez pas encore publié de document pour cette matière.",
+              isSearching
+                ? "Aucun document ne correspond à votre recherche."
+                : "Vous n'avez pas encore publié de document pour cette matière.",
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: const TextStyle(
                 fontSize: 15,
-                color: const Color(0xFF8E8E93),
+                color: Color(0xFF8E8E93),
                 height: 1.5,
               ),
             ),

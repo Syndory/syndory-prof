@@ -102,7 +102,10 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       ResourcesUiState.loading => const _SkeletonList(),
       ResourcesUiState.empty   => const _EmptyState(),
       ResourcesUiState.loaded  => _SubjectList(subjects: _subjects),
-      ResourcesUiState.error   => ErrorStateWidget(onRetry: _loadResources),
+      ResourcesUiState.error   => ErrorStateWidget(
+        onRetry: _loadResources,
+        message: 'Impossible de récupérer vos ressources pédagogiques. Veuillez vérifier votre connexion.',
+      ),
     };
   }
 }
