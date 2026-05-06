@@ -1,9 +1,118 @@
 import 'package:flutter/material.dart';
 
 import 'widgets/class_card.dart';
+import 'widgets/class_skeleton.dart';
+import 'widgets/state_box.dart';
 
-class ClassesScreen extends StatelessWidget {
+enum ClassesUiState { loading, empty, error, loaded }
+
+class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
+
+  @override
+  State<ClassesScreen> createState() => _ClassesScreenState();
+}
+
+class _ClassesScreenState extends State<ClassesScreen> {
+  ClassesUiState _state = ClassesUiState.loading;
+
+  @override
+  void initState() {
+    super.initState();
+    _simulateInitialLoad();
+  }
+
+  void _simulateInitialLoad() {
+    // 1. Initial loading for 1.5s
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        // 2. Fail the first time to show the error state
+        setState(() {
+          _state = ClassesUiState.error;
+        });
+      }
+    });
+  }
+
+  void _onRetry() {
+    setState(() {
+      _state = ClassesUiState.loading;
+    });
+
+    // 3. Retry loading for a shorter time (0.8s)
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        // 4. Succeed and show data
+        setState(() {
+          _state = ClassesUiState.loaded;
+        });
+      }
+    });
+  }
+
+  Widget _buildContent() {
+    switch (_state) {
+      case ClassesUiState.loading:
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          children: const [ClassSkeleton(), ClassSkeleton()],
+        );
+      case ClassesUiState.empty:
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          children: const [
+            StateBox(
+              icon: Icons.school_outlined,
+              title: 'Aucune classe assignée',
+              description:
+                  'Vous n\'avez pas de classe affectée pour le moment. Veuillez contacter l\'administration en cas de besoin.',
+            ),
+          ],
+        );
+      case ClassesUiState.error:
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          children: [
+            StateBox(
+              icon: Icons.error_outline,
+              iconColor: const Color(0xFFEB5757), // --error
+              title: 'Erreur de chargement',
+              description:
+                  'Impossible de charger vos classes suite à un problème de connexion.',
+              buttonText: 'Réessayer',
+              onButtonPressed: _onRetry,
+            ),
+          ],
+        );
+      case ClassesUiState.loaded:
+        return ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          children: const [
+            ClassCard(
+              title: 'L3 Informatique',
+              filiere: 'Sciences & Technologies',
+              studentCount: 42,
+              subjects: ['Développement Web', 'Algorithmie II'],
+              attendanceRate: 94,
+            ),
+            ClassCard(
+              title: 'M1 Ingénierie Logicielle',
+              filiere: 'Master Informatique',
+              studentCount: 28,
+              subjects: ['Architecture Cloud'],
+              attendanceRate: 78,
+            ),
+            ClassCard(
+              title: 'L2 Math-Info',
+              filiere: 'Sciences & Technologies',
+              studentCount: 65,
+              subjects: ['Bases de données', 'Systèmes'],
+              attendanceRate: 88,
+            ),
+          ],
+        );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,35 +263,8 @@ class ClassesScreen extends StatelessWidget {
             ),
           ),
 
-          // Content
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              children: const [
-                ClassCard(
-                  title: 'L3 Informatique',
-                  filiere: 'Sciences & Technologies',
-                  studentCount: 42,
-                  subjects: ['Développement Web', 'Algorithmie II'],
-                  attendanceRate: 94,
-                ),
-                ClassCard(
-                  title: 'M1 Ingénierie Logicielle',
-                  filiere: 'Master Informatique',
-                  studentCount: 28,
-                  subjects: ['Architecture Cloud'],
-                  attendanceRate: 78,
-                ),
-                ClassCard(
-                  title: 'L2 Math-Info',
-                  filiere: 'Sciences & Technologies',
-                  studentCount: 65,
-                  subjects: ['Bases de données', 'Systèmes'],
-                  attendanceRate: 88,
-                ),
-              ],
-            ),
-          ),
+          // Content Area
+          Expanded(child: _buildContent()),
         ],
       ),
     );

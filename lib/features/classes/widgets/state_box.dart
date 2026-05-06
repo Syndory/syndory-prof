@@ -48,11 +48,7 @@ class StateBox extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              size: 32,
-              color: iconColor,
-            ),
+            child: Icon(icon, size: 32, color: iconColor),
           ),
           Text(
             title,
@@ -79,11 +75,17 @@ class StateBox extends StatelessWidget {
             OutlinedButton(
               onPressed: onButtonPressed,
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF092C4C), width: 2), // --primary
+                side: const BorderSide(
+                  color: Color(0xFF092C4C),
+                  width: 2,
+                ), // --primary
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(9999),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
               child: Text(
                 buttonText!,
