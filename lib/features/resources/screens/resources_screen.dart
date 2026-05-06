@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/resources_models.dart';
 import '../screens/resource_detail_screen.dart';
+import '../widgets/error_state.dart';
 
 
 const List<SubjectResource> _demoSubjects = [
@@ -63,15 +64,20 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   }
 
   Future<void> _loadResources() async {
-    // Simule un chargement de 1.2s puis affiche les données.
-    await Future.delayed(const Duration(milliseconds: 1200));
-    if (!mounted) return;
-    setState(() {
-      _subjects = _demoSubjects;
-      _uiState = _subjects.isEmpty
-          ? ResourcesUiState.empty
-          : ResourcesUiState.loaded;
-    });
+    try{
+      // Simule un chargement de 1.2s puis affiche les données.
+      await Future.delayed(const Duration(milliseconds: 1200));
+      // throw Exception("Pas de connexion");
+      if (!mounted) return;
+      setState(() {
+        _subjects = _demoSubjects;
+        _uiState = _subjects.isEmpty
+            ? ResourcesUiState.empty
+            : ResourcesUiState.loaded;
+      });
+    } catch (e) {
+      setState(() => _uiState = ResourcesUiState.error); 
+    }
   }
 
   @override
@@ -96,6 +102,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
       ResourcesUiState.loading => const _SkeletonList(),
       ResourcesUiState.empty   => const _EmptyState(),
       ResourcesUiState.loaded  => _SubjectList(subjects: _subjects),
+      ResourcesUiState.error   => ErrorStateWidget(onRetry: _loadResources),
     };
   }
 }
