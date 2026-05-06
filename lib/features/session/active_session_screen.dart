@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../classes/models/models.dart';
+import 'session_recap_screen.dart';
+
 
 class ActiveSessionScreen extends StatefulWidget {
   final ClassModel classInfo;
@@ -44,12 +46,27 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
         } else {
           _isClosed = true;
           _timer.cancel();
+          _navigateToRecap();
         }
       });
     });
   }
 
+  void _navigateToRecap() {
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SessionRecapScreen(classInfo: widget.classInfo),
+          ),
+        );
+      }
+    });
+  }
+
   void _extendSession() {
+
     setState(() {
       _secondsRemaining += 5 * 60;
     });
@@ -326,8 +343,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                                         _showClosureModal = false;
                                         _isClosed = true;
                                         _timer.cancel();
+                                        _navigateToRecap();
                                       });
                                     },
+
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: error,
                                       foregroundColor: Colors.white,
