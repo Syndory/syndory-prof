@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../app/env/app_env.dart';
+import '../../app/navigation/main_shell.dart';
 import '../../data/supabase/supabase_client.dart';
-import '../profile/profile_screen.dart';
 
 const String _devLoginEmail = String.fromEnvironment('DEV_LOGIN_EMAIL');
 const String _devLoginPassword = String.fromEnvironment('DEV_LOGIN_PASSWORD');
@@ -58,6 +58,7 @@ class _DevLoginScreenState extends State<DevLoginScreen> {
     });
 
     try {
+      // Correct method: signInWithPassword({email, password})
       final result = await SupabaseClientProvider.client.auth
           .signInWithPassword(email: email, password: password);
 
@@ -77,8 +78,10 @@ class _DevLoginScreenState extends State<DevLoginScreen> {
         return;
       }
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const ProfileScreen()),
+      // Redirect to MainShell instead of just ProfileScreen
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainShell()),
+        (route) => false,
       );
     } catch (e) {
       if (!mounted) {

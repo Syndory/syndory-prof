@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../../data/repositories/classes_repository.dart';
 import 'effectifs_screen.dart';
 import 'models/models.dart';
 import 'widgets/class_card.dart';
@@ -18,120 +19,49 @@ class ClassesScreen extends StatefulWidget {
 
 class _ClassesScreenState extends State<ClassesScreen> {
   ClassesUiState _state = ClassesUiState.loading;
-
-  // Mock Data
-  final List<ClassModel> _classes = [
-    ClassModel(
-      title: 'L3 Informatique',
-      filiere: 'Sciences & Technologies',
-      studentCount: 42,
-      subjects: ['Développement Web', 'Algorithmie II'],
-      attendanceRate: 94,
-      students: [
-        const StudentModel(
-          name: 'Alice Bernard',
-          email: 'alice.bernard@univ.edu',
-          initials: 'AB',
-          attendanceRate: 95,
-        ),
-        const StudentModel(
-          name: 'Julien Dupont',
-          email: 'julien.dupont@univ.edu',
-          initials: 'JD',
-          attendanceRate: 72,
-        ),
-        const StudentModel(
-          name: 'Marie Leroy',
-          email: 'marie.leroy@univ.edu',
-          initials: 'ML',
-          attendanceRate: 45,
-        ),
-        const StudentModel(
-          name: 'Thomas Martin',
-          email: 'thomas.martin@univ.edu',
-          initials: 'TM',
-          attendanceRate: 100,
-        ),
-      ],
-    ),
-    ClassModel(
-      title: 'M1 Ingénierie Logicielle',
-      filiere: 'Master Informatique',
-      studentCount: 28,
-      subjects: ['Architecture Cloud'],
-      attendanceRate: 78,
-      students: [
-        const StudentModel(
-          name: 'Marc Lefebvre',
-          email: 'marc.lefebvre@univ.edu',
-          initials: 'ML',
-          attendanceRate: 88,
-        ),
-        const StudentModel(
-          name: 'Sophie Petit',
-          email: 'sophie.petit@univ.edu',
-          initials: 'SP',
-          attendanceRate: 92,
-        ),
-      ],
-    ),
-    ClassModel(
-      title: 'L2 Math-Info',
-      filiere: 'Sciences & Technologies',
-      studentCount: 65,
-      subjects: ['Bases de données', 'Systèmes'],
-      attendanceRate: 88,
-      students: [
-        const StudentModel(
-          name: 'Jean Rochefort',
-          email: 'jean.rochefort@univ.edu',
-          initials: 'JR',
-          attendanceRate: 82,
-        ),
-      ],
-    ),
-    const ClassModel(
-      title: 'L1 Architecture',
-      filiere: 'Sciences & Technologies',
-      studentCount: 0,
-      subjects: ['Dessin Technique'],
-      attendanceRate: 0,
-      students: [],
-    ),
-  ];
+  List<ClassModel> _classes = [];
 
   @override
   void initState() {
     super.initState();
-    _simulateInitialLoad();
+    _loadClasses();
   }
 
-  void _simulateInitialLoad() {
-    // 1. Initial loading for 1.5s
-    unawaited(Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        // 2. Fail the first time to show the error state
-        setState(() {
-          _state = ClassesUiState.error;
-        });
-      }
-    }));
-  }
-
-  void _onRetry() {
+  Future<void> _loadClasses() async {
     setState(() {
       _state = ClassesUiState.loading;
     });
 
-    // 3. Retry loading for a shorter time (0.8s)
-    unawaited(Future.delayed(const Duration(milliseconds: 800), () {
+    try {
+      final rawClasses = await ClassesRepository.getProfessorClasses();
+      
       if (mounted) {
-        // 4. Succeed and show data
         setState(() {
-          _state = ClassesUiState.loaded;
+          _classes = rawClasses.map((item) {
+            return ClassModel(
+              title: item['name'] as String,
+              filiere: item['filiere_name'] as String,
+              subjects: List<String>.from(item['subjects'] as List),
+              studentCount: 0, // TODO: Fetch real student count
+              attendanceRate: 0, // TODO: Fetch real attendance rate
+              students: [], // TODO: Fetch real students
+            );
+          }).toList();
+          
+          _state = _classes.isEmpty ? ClassesUiState.empty : ClassesUiState.loaded;
         });
       }
-    }));
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _state = ClassesUiState.error;
+        });
+      }
+    }
+  }
+
+  void _onRetry() {
+    _loadClasses();
   }
 
   Widget _buildContent() {
