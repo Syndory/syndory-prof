@@ -182,7 +182,10 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
           // Affichage de la page d'ajout d'un document
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddDocumentScreen()),
+            MaterialPageRoute(
+              // On passe le titre récupéré de la page précédente
+              builder: (context) => AddDocumentScreen(subjectTitle: widget.subject.title),
+            ),
           );
 
           // Si on a reçu un document (le résultat n'est pas nul)
