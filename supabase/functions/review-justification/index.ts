@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-client@2.43.1'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,48 +7,95 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Gestion du CORS pour les appels depuis le Web
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { justificatif_id, decision, rejection_reason } = await req.json()
+    // 🔐 1. AUTH
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response('Unauthorized', { status: 401 })
+    }
 
-    // Initialisation du client Supabase avec la clé de service (Admin)
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const token = authHeader.replace('Bearer ', '')
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // Mise à jour du justificatif
-    const { data, error } = await supabaseClient
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token)
+
+    if (authError || !user) {
+      return new Response('Invalid token', { status: 401 })
+    }
+
+    // 📦 2. BODY
+    const { justificatif_id, decision, rejection_reason } = await req.json()
+
+    if (!justificatif_id || !decision) {
+      return new Response('Missing fields', { status: 400 })
+    }
+
+    // 👤 3. ROLE CHECK
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'professor') {
+      return new Response('Forbidden', { status: 403 })
+    }
+
+    // 🔎 4. VERIFY OWNERSHIP
+    const { data: justification } = await supabase
       .from('justificatifs')
-      .update({ 
-        statut: decision,
-        rejection_reason: rejection_reason,
-        reviewed_at: new Date().toISOString()
+      .select('id, presence_id')
+      .eq('id', justificatif_id)
+      .single()
+
+    if (!justification) {
+      return new Response('Not found', { status: 404 })
+    }
+
+    const { data: presence } = await supabase
+      .from('presences')
+      .select('sessions(seances(prof_id))')
+      .eq('id', justification.presence_id)
+      .single()
+
+    const profId = presence?.sessions?.seances?.prof_id
+
+    if (profId !== user.id) {
+      return new Response('Forbidden', { status: 403 })
+    }
+
+    // 🛠️ 5. UPDATE (corrigé)
+    const { error } = await supabase
+      .from('justificatifs')
+      .update({
+        status: decision,
+        rejection_reason: rejection_reason ?? null,
+        reviewed_at: new Date().toISOString(),
       })
       .eq('id', justificatif_id)
-      .select()
 
     if (error) throw error
 
     return new Response(
-      JSON.stringify({ message: 'Statut mis à jour avec succès', data }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
+      JSON.stringify({ success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
 
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     )
   }
 })
