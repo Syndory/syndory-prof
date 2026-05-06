@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'justificatiion_model.dart';
+import 'justification_model.dart';
 import 'justification_repository.dart';
 import 'justification_ui_states.dart';
 import 'justification_detail_page.dart';
