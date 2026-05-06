@@ -65,11 +65,11 @@ serve(async (req) => {
 
     const { data: presence } = await supabase
       .from('presences')
-      .select('sessions(seances(prof_id))')
+      .select('sessions(seances(professor_id))')
       .eq('id', justification.presence_id)
       .single()
 
-    const profId = presence?.sessions?.seances?.prof_id
+    const profId = presence?.sessions?.seances?.professor_id
 
     if (profId !== user.id) {
       return new Response('Forbidden', { status: 403 })
