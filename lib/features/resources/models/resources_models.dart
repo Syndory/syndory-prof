@@ -19,10 +19,7 @@ class SubjectResource {
 enum ResourcesUiState {
   
   loading,
-
-
   empty,
-
-  
   loaded,
+  error,
 }
