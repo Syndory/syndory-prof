@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import '../../data/repositories/classes_repository.dart';
-import 'effectifs_screen.dart';
 import 'models/models.dart';
+import '../session/pre_session_screen.dart';
 import 'widgets/class_card.dart';
+
 import 'widgets/class_skeleton.dart';
 import 'widgets/state_box.dart';
 
@@ -109,9 +110,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            EffectifsScreen(classInfo: classModel),
+                            PreSessionScreen(classInfo: classModel),
                       ),
                     );
+
                   },
                   child: ClassCard(
                     title: classModel.title,

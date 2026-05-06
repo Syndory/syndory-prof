@@ -12,6 +12,8 @@ import 'auth_routes.dart';
 import 'dev_login_screen.dart';
 
 const bool _devLoginScreen = bool.fromEnvironment('DEV_LOGIN_SCREEN');
+const bool _devBypassAuth = true; // Set to true to bypass login for development
+
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -23,6 +25,10 @@ class AuthGate extends StatelessWidget {
 
     if (!hasConfig || !isInitialized) {
       return const DebugHealthScreen();
+    }
+
+    if (_devBypassAuth && !kReleaseMode) {
+      return const MainShell();
     }
 
     return StreamBuilder<AuthState>(
