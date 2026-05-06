@@ -1,19 +1,54 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'pages/skeleton_page.dart';
+import 'pages/dashboard_page.dart';
 
-import 'app/env/app_env.dart';
-import 'app/app_bootstrap.dart';
-import 'data/supabase/supabase_client.dart';
-
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (AppEnv.hasSupabaseConfig) {
-    await SupabaseClientProvider.init(
-      url: AppEnv.supabaseUrl,
-      anonKey: AppEnv.supabaseAnonKey,
-    );
-  }
-
-  runApp(const AppBootstrap());
+  await Supabase.initialize(
+    url: 'https://<PROJECT-REF>.supabase.co',
+    anonKey: '<SUPABASE_ANON_KEY>',
+  );
+  runApp(const MyApp());
 }
 
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    const DashboardPage(),
+    const SkeletonPage(),
+  
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: _pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.hourglass_empty), label: "Skeleton"),
+            BottomNavigationBarItem(icon: Icon(Icons.school), label: "Professeur"),
+          ],
+        ),
+      ),
+    );
+  }
+}
