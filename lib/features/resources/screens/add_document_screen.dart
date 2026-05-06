@@ -7,7 +7,8 @@ import '../widgets/class_selection_card.dart';
 import '../widgets/custom_back_button.dart';
 
 class AddDocumentScreen extends StatefulWidget {
-  const AddDocumentScreen({super.key});
+  final String subjectTitle;
+  const AddDocumentScreen({super.key, required this.subjectTitle});
 
   @override
   State<AddDocumentScreen> createState() => _AddDocumentScreenState();
@@ -148,7 +149,8 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
             // MATIÈRE
             const FormLabel(label: "Matière"),
             const SizedBox(height: 10),
-            const CustomDropdownField(value: "Bases de données"),
+            // On affiche dynamiquement le titre de la valeur reçue
+            CustomDropdownField(value: widget.subjectTitle),
 
             const SizedBox(height: 25),
 
