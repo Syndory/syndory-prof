@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../features/classes/classes_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/justifications/justifications_screen.dart';
+import '../../accueil/accueil_screen.dart';
 
 class MainShell extends StatefulWidget {
   final int initialIndex;
@@ -34,10 +36,10 @@ class _MainShellState extends State<MainShell> {
       body: IndexedStack(
         index: _currentIndex,
         children: const [
-          _PlaceholderScreen(title: 'Accueil'),
+          AccueilScreen(),
           _PlaceholderScreen(title: 'Calendrier'),
           ClassesScreen(),
-          _PlaceholderScreen(title: 'Ressources'),
+          JustificationsScreen(),
           ProfileScreen(),
         ],
       ),
@@ -65,9 +67,9 @@ class _MainShellState extends State<MainShell> {
             label: 'Mes cours',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.folder_open_outlined),
-            activeIcon: Icon(Icons.folder),
-            label: 'Ressources',
+            icon: Icon(Icons.assignment_outlined),
+            activeIcon: Icon(Icons.assignment),
+            label: 'Justificatifs',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
