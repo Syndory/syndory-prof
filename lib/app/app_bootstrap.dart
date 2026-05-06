@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'theme/app_theme.dart';
 import '../features/resources/screens/resource_detail_screen.dart';
-import '../features/resources/screens/add_document_screen.dart';
 
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});

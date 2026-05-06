@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/document_model.dart';
+// Importation des widgets
+import '../widgets/form_components.dart';
+import '../widgets/upload_zone.dart';
+import '../widgets/class_selection_card.dart';
+import '../widgets/custom_back_button.dart';
 
 class AddDocumentScreen extends StatefulWidget {
   const AddDocumentScreen({super.key});
@@ -8,171 +14,218 @@ class AddDocumentScreen extends StatefulWidget {
 }
 
 class _AddDocumentScreenState extends State<AddDocumentScreen> {
+  // Définition de la couleur principale
+  final Color primaryBlue = const Color(0xFF001F3F);
+  final TextEditingController _titreController = TextEditingController(); 
+
+  // Liste des types de documents
+  String typeSelectionne = "Sélectionner un type";
+  final List<String> listeDesTypes = [
+    "Support de cours",
+    "Exercice / TP",
+    "Examen / Quiz",
+    "Annales",
+    "Autre",
+  ];
+
+  //  Liste des classes disponibles
+  final List<String> listeDesClasses = [
+    "L3 Informatique",
+    "M1 Ingénierie Logicielle",
+    "M2 Cybersécurité",
+  ];
+
+  // Liste pour stocker les classes sélectionnées (vide au départ)
+  List<String> classesSelectionnees = [];
+  
+  // Fonction pour gérer le clic sur une classe
+  void toggleSelection(String className) {
+    setState(() {
+      if (classesSelectionnees.contains(className)) {
+        classesSelectionnees.remove(className); // On décoche
+      } else {
+        classesSelectionnees.add(className); // On coche
+      }
+    });
+  }
+
+  // Fonction pour afficher le menu de sélection du type
+  void _afficherMenuType() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Type de document",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              const Divider(),
+
+              ...listeDesTypes.map(
+                (type) => ListTile(
+                  title: Text(type),
+                  trailing: typeSelectionne == type
+                      ? Icon(Icons.check_circle, color: primaryBlue)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      typeSelectionne = type;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _titreController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // 1. L'en-tête (Header)
+
+      // L'EN-TÊTE
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-        ),
-        title: const Text(
+        centerTitle: false,
+        leadingWidth: 70,
+        leading: const CustomBackButton(),
+        title: Text(
           "Publier un document",
-          style: TextStyle(color: Color(0xFF001F3F), fontWeight: FontWeight.bold),
+          style: TextStyle(color: primaryBlue, fontWeight: FontWeight.bold),
         ),
       ),
-      
-      // 2. Le corps du formulaire
+
+      // LE CORPS
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildLabel("Fichier"),
+            // ZONE FICHIER
+            const FormLabel(label: "Fichier"),
             const SizedBox(height: 10),
-            _buildUploadZone(),
+            const UploadZone(),
+            const SizedBox(height: 25),
+
+            // TITRE
+            const FormLabel(label: "Titre du document"),
+            const SizedBox(height: 10),
+            CustomTextField(hint: "Ex: Support de cours SQL", 
+            controller: _titreController),
             
-            const SizedBox(height: 20),
-            _buildLabel("Titre du document"),
-            const SizedBox(height: 10),
-            _buildTextField("Ex: Support de cours SQL"),
 
-            const SizedBox(height: 20),
-            _buildLabel("Type de document"),
-            const SizedBox(height: 10),
-            _buildDropdownField("Sélectionner un type"),
+            const SizedBox(height: 25),
 
-            const SizedBox(height: 20),
-            _buildLabel("Matière"),
+            // TYPE DE DOCUMENT
+            const FormLabel(label: "Type de document"),
             const SizedBox(height: 10),
-            _buildDropdownField("Bases de données"),
+            CustomDropdownField(
+              value: typeSelectionne,
+              onTap: _afficherMenuType,
+            ),
 
-            const SizedBox(height: 20),
-            _buildLabel("Classes destinataires"),
+            const SizedBox(height: 25),
+
+            // MATIÈRE
+            const FormLabel(label: "Matière"),
             const SizedBox(height: 10),
-            _buildClassCard("L3 Informatique", true),
-            _buildClassCard("M1 Ingénierie Logicielle", true),
+            const CustomDropdownField(value: "Bases de données"),
+
+            const SizedBox(height: 25),
+
+            // CLASSES DESTINATAIRES (SECTION DYNAMIQUE)
+            const FormLabel(label: "Classes destinataires"),
+            const SizedBox(height: 10),
+
+            // On génère dynamiquement les cartes à partir de la liste
+            ...listeDesClasses.map((nomDeLaClasse) {
+              return ClassSelectionCard(
+                className: nomDeLaClasse,
+                isSelected: classesSelectionnees.contains(nomDeLaClasse),
+                onTap: () => toggleSelection(nomDeLaClasse),
+              );
+            }).toList(),
 
             const SizedBox(height: 40),
-            _buildSubmitButton(),
-            const SizedBox(height: 20),
+
+            // BOUTON VALIDER
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryBlue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                onPressed: () {
+                  // On récupère les données
+                  String titre = _titreController.text;
+                  String type = typeSelectionne;
+                  List<String> classes = classesSelectionnees;
+
+                  // Vérification simple
+                  if (titre.isEmpty ||
+                      type == "Sélectionner un type" ||
+                      classes.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("⚠️ Veuillez remplir tous les champs !"),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    return;
+                  }
+
+                  // 3. ON CRÉE L'OBJET DOCUMENT
+                  // C'est cet objet qui sera envoyé à la page précédente
+                  final nouveauDocument = DocumentModel(
+                    id: DateTime.now().toString(), 
+                    title: titre,
+                    date: "À l'instant", 
+                    fileSize: '1.5 MB', 
+                    fileType: 'pdf',    
+                  );
+
+                  // 4. REDIRECTION IMMÉDIATE
+                  // On ferme cet écran et on renvoie l'objet nouveauDocument
+                  Navigator.of(context).pop(nouveauDocument);
+
+                },
+                child: const Text(
+                  "Publier le document",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
           ],
         ),
-      ),
-    );
-  }
-
-  //  WIDGETS DE COMPOSANTS 
-
-  Widget _buildLabel(String text) {
-    return Text.rich(
-      TextSpan(
-        text: text,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF001F3F)),
-        children: const [
-          TextSpan(text: " *", style: TextStyle(color: Colors.red)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUploadZone() {
-    return Container(
-      width: double.infinity,
-      height: 150,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid), // On remplacera par DottedBorder plus tard
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.upload_outlined, size: 40, color: Colors.grey.shade400),
-          const Text("Choisir un fichier", style: TextStyle(fontWeight: FontWeight.w500)),
-          const SizedBox(height: 5),
-          Text("PDF, DOCX, PPTX, JPG, PNG (Max 20 Mo)", 
-               style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField(String hint) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: hint,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-      ),
-    );
-  }
-
-  Widget _buildDropdownField(String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(value, style: const TextStyle(color: Colors.black54)),
-          const Icon(Icons.stop, color: Colors.grey, size: 15), // Carré gris comme sur la maquette
-        ],
-      ),
-    );
-  }
-
-  Widget _buildClassCard(String className, bool isChecked) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade200),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.check_box, color: const Color(0xFF001F3F)),
-          const SizedBox(width: 10),
-          Text(className, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF001F3F))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 55,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF001F3F),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        ),
-        onPressed: () {},
-        child: const Text("Publier le document", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
       ),
     );
   }

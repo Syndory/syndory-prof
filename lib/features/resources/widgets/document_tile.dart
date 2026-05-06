@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:syndory_prof/app/theme/app_theme.dart';
 import '../models/document_model.dart';
 
 class DocumentTile extends StatelessWidget {
@@ -28,14 +29,14 @@ class DocumentTile extends StatelessWidget {
             color: const Color(0xFFF0F7FF),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.insert_drive_file_outlined, color: Color(0xFF007AFF), size: 24),
+          child: const Icon(Icons.insert_drive_file_outlined, color: AppTheme.primaryBlue, size: 24),
         ),
         title: Text(
           document.title,
           style: theme.textTheme.titleMedium?.copyWith(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF1A1A1A),
+            color: AppTheme.primaryBlue,
           ),
         ),
         subtitle: Padding(
