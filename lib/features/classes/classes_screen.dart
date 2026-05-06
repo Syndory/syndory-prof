@@ -27,25 +27,29 @@ class _ClassesScreenState extends State<ClassesScreen> {
       attendanceRate: 94,
       students: [
         const StudentModel(
-            name: 'Alice Bernard',
-            email: 'alice.bernard@univ.edu',
-            initials: 'AB',
-            attendanceRate: 95),
+          name: 'Alice Bernard',
+          email: 'alice.bernard@univ.edu',
+          initials: 'AB',
+          attendanceRate: 95,
+        ),
         const StudentModel(
-            name: 'Julien Dupont',
-            email: 'julien.dupont@univ.edu',
-            initials: 'JD',
-            attendanceRate: 72),
+          name: 'Julien Dupont',
+          email: 'julien.dupont@univ.edu',
+          initials: 'JD',
+          attendanceRate: 72,
+        ),
         const StudentModel(
-            name: 'Marie Leroy',
-            email: 'marie.leroy@univ.edu',
-            initials: 'ML',
-            attendanceRate: 45),
+          name: 'Marie Leroy',
+          email: 'marie.leroy@univ.edu',
+          initials: 'ML',
+          attendanceRate: 45,
+        ),
         const StudentModel(
-            name: 'Thomas Martin',
-            email: 'thomas.martin@univ.edu',
-            initials: 'TM',
-            attendanceRate: 100),
+          name: 'Thomas Martin',
+          email: 'thomas.martin@univ.edu',
+          initials: 'TM',
+          attendanceRate: 100,
+        ),
       ],
     ),
     ClassModel(
@@ -56,15 +60,17 @@ class _ClassesScreenState extends State<ClassesScreen> {
       attendanceRate: 78,
       students: [
         const StudentModel(
-            name: 'Marc Lefebvre',
-            email: 'marc.lefebvre@univ.edu',
-            initials: 'ML',
-            attendanceRate: 88),
+          name: 'Marc Lefebvre',
+          email: 'marc.lefebvre@univ.edu',
+          initials: 'ML',
+          attendanceRate: 88,
+        ),
         const StudentModel(
-            name: 'Sophie Petit',
-            email: 'sophie.petit@univ.edu',
-            initials: 'SP',
-            attendanceRate: 92),
+          name: 'Sophie Petit',
+          email: 'sophie.petit@univ.edu',
+          initials: 'SP',
+          attendanceRate: 92,
+        ),
       ],
     ),
     ClassModel(
@@ -75,11 +81,20 @@ class _ClassesScreenState extends State<ClassesScreen> {
       attendanceRate: 88,
       students: [
         const StudentModel(
-            name: 'Jean Rochefort',
-            email: 'jean.rochefort@univ.edu',
-            initials: 'JR',
-            attendanceRate: 82),
+          name: 'Jean Rochefort',
+          email: 'jean.rochefort@univ.edu',
+          initials: 'JR',
+          attendanceRate: 82,
+        ),
       ],
+    ),
+    const ClassModel(
+      title: 'L1 Architecture',
+      filiere: 'Sciences & Technologies',
+      studentCount: 0,
+      subjects: ['Dessin Technique'],
+      attendanceRate: 0,
+      students: [],
     ),
   ];
 
@@ -155,24 +170,26 @@ class _ClassesScreenState extends State<ClassesScreen> {
         return ListView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
           children: _classes
-              .map((classModel) => GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EffectifsScreen(classInfo: classModel),
-                        ),
-                      );
-                    },
-                    child: ClassCard(
-                      title: classModel.title,
-                      filiere: classModel.filiere,
-                      studentCount: classModel.studentCount,
-                      subjects: classModel.subjects,
-                      attendanceRate: classModel.attendanceRate,
-                    ),
-                  ))
+              .map(
+                (classModel) => GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            EffectifsScreen(classInfo: classModel),
+                      ),
+                    );
+                  },
+                  child: ClassCard(
+                    title: classModel.title,
+                    filiere: classModel.filiere,
+                    studentCount: classModel.studentCount,
+                    subjects: classModel.subjects,
+                    attendanceRate: classModel.attendanceRate,
+                  ),
+                ),
+              )
               .toList(),
         );
     }
