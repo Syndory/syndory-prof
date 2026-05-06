@@ -6,7 +6,7 @@ import 'errors/missing_supabase_config_screen.dart';
 import '../features/auth/auth_routes.dart';
 import '../features/auth/placeholder.dart';
 import '../features/profile/profile_screen.dart';
-import '../features/resources/resources_screen.dart';
+import '../features/resources/screens/resources_screen.dart';
 
 
 const bool _devProfilePreview = bool.fromEnvironment('DEV_PROFILE_PREVIEW');
