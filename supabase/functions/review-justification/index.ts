@@ -75,15 +75,12 @@ serve(async (req) => {
       return new Response('Forbidden', { status: 403 })
     }
 
-    // 🛠️ 5. UPDATE (corrigé)
-    const { error } = await supabase
-      .from('justificatifs')
-      .update({
-        status: decision,
-        rejection_reason: rejection_reason ?? null,
-        reviewed_at: new Date().toISOString(),
-      })
-      .eq('id', justificatif_id)
+    // 🛠️ 5. VALIDATION MÉTIER VIA RPC
+    const { error } = await supabase.rpc('validate_justification', {
+      justificatif_id,
+      decision,
+      rejection_reason: rejection_reason ?? null,
+    })
 
     if (error) throw error
 
