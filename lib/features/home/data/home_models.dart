@@ -54,6 +54,11 @@ class SeanceModel {
   String get displayStartTime => _startHhmm;
   String get displayEndTime => _endHhmm;
 
+  String get displayDayName {
+    const jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    return jours[DateTime.parse(date).weekday - 1];
+  }
+
   String get locationLabel {
     if (salleName != null && salleName!.isNotEmpty) {
       return '$className • $salleName';
@@ -145,6 +150,7 @@ class HomePageData {
     required this.pendingJustificatifs,
     required this.todaySeances,
     this.activeSession,
+    this.nextSeance,
     required this.classes,
   });
 
@@ -153,6 +159,7 @@ class HomePageData {
   final int pendingJustificatifs;
   final List<SeanceModel> todaySeances;
   final ActiveSessionModel? activeSession;
+  final SeanceModel? nextSeance;
   final List<ClasseModel> classes;
 
   String get initials {

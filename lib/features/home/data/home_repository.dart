@@ -19,6 +19,7 @@ class HomeRepository {
       _fetchActiveSession(userId),
       _fetchPendingJustificatifsCount(),
       _fetchClasses(userId),
+      _fetchNextSeance(userId, today),
     ]);
 
     final user = results[0] as Map<String, dynamic>;
@@ -26,6 +27,7 @@ class HomeRepository {
     final session = results[2] as ActiveSessionModel?;
     final justifCount = results[3] as int;
     final classes = results[4] as List<ClasseModel>;
+    final nextSeance = results[5] as SeanceModel?;
 
     return HomePageData(
       firstName: user['first_name'] as String? ?? '',
@@ -33,6 +35,7 @@ class HomeRepository {
       pendingJustificatifs: justifCount,
       todaySeances: seances,
       activeSession: session,
+      nextSeance: nextSeance,
       classes: classes,
     );
   }
@@ -77,6 +80,21 @@ class HomeRepository {
         .select('id')
         .eq('status', 'en_attente');
     return (data as List).length;
+  }
+
+  Future<SeanceModel?> _fetchNextSeance(String userId, String today) async {
+    final data = await _client
+        .from('seances')
+        .select('id, date, start_time, end_time, matieres(name), classes(name), salles(name)')
+        .eq('professor_id', userId)
+        .eq('status', 'publié')
+        .gt('date', today)
+        .order('date')
+        .order('start_time')
+        .limit(1)
+        .maybeSingle();
+    if (data == null) return null;
+    return SeanceModel.fromMap(data);
   }
 
   Future<List<ClasseModel>> _fetchClasses(String userId) async {

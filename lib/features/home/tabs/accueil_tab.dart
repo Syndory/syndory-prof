@@ -90,6 +90,10 @@ class _AccueilTabState extends State<AccueilTab> {
             const SizedBox(height: 24),
           ],
           _buildAujourdhuiSection(data.todaySeances),
+          if (data.todaySeances.isEmpty && data.nextSeance != null) ...[
+            const SizedBox(height: 24),
+            _buildProchaineSeanceSection(data.nextSeance!),
+          ],
           const SizedBox(height: 24),
           _buildMesClassesSection(data.classes),
         ],
@@ -155,10 +159,19 @@ class _AccueilTabState extends State<AccueilTab> {
         const SizedBox(height: 12),
         if (seances.isEmpty)
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
+            padding: EdgeInsets.symmetric(vertical: 24),
             child: Center(
-              child: Text("Aucune séance aujourd'hui",
-                  style: TextStyle(color: Colors.grey)),
+              child: Column(
+                children: [
+                  Icon(Icons.auto_awesome_outlined, size: 36, color: Colors.grey),
+                  SizedBox(height: 10),
+                  Text('Aucun cours programmé',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                  SizedBox(height: 4),
+                  Text('Profitez de votre journée libre.',
+                      style: TextStyle(color: Colors.grey, fontSize: 13)),
+                ],
+              ),
             ),
           )
         else
@@ -166,6 +179,18 @@ class _AccueilTabState extends State<AccueilTab> {
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _SeanceCard(seance: s),
               )),
+      ],
+    );
+  }
+
+  Widget _buildProchaineSeanceSection(SeanceModel seance) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Prochaine séance',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 12),
+        _ProchaineSeanceCard(seance: seance),
       ],
     );
   }
@@ -505,6 +530,71 @@ class _StatusBadge extends StatelessWidget {
             fontSize: 10,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.2),
+      ),
+    );
+  }
+}
+
+// ── Carte prochaine séance ─────────────────────────────────────────────────
+
+class _ProchaineSeanceCard extends StatelessWidget {
+  const _ProchaineSeanceCard({required this.seance});
+  final SeanceModel seance;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 60,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(seance.displayDayName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 2),
+                Text(seance.displayStartTime,
+                    style: const TextStyle(
+                        color: Colors.grey, fontSize: 13)),
+              ],
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 36,
+            color: Colors.grey.shade200,
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(seance.matiereName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14),
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 3),
+                Text(seance.locationLabel,
+                    style: const TextStyle(
+                        color: Colors.grey, fontSize: 12)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
