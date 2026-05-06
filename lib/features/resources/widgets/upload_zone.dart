@@ -3,7 +3,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:syndory_prof/app/theme/app_theme.dart';
 
 class UploadZone extends StatefulWidget {
-  const UploadZone({super.key});
+  final Function(String) onFileSelected;
+  const UploadZone({super.key, required this.onFileSelected});
 
   @override
   State<UploadZone> createState() => _UploadZoneState();
@@ -50,6 +51,7 @@ class _UploadZoneState extends State<UploadZone> {
         _fileName = file.name;
         _errorMessage = null;
       });
+      widget.onFileSelected(file.name);
     }
   }
 
