@@ -119,7 +119,7 @@ class JustificationModel {
       id: json['id'] as String,
       studentId: json['student_id'] as String,
       presenceId: json['presence_id'] as String?,
-      statut: JustificationStatutX.fromString(json['statut'] as String?),
+      statut: JustificationStatutX.fromString(json['status'] as String?),
       fileUrl: json['file_url'] as String?,
       reason: json['reason'] as String?,
       rejectionReason: json['rejection_reason'] as String?,

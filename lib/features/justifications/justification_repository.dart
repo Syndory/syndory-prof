@@ -16,7 +16,7 @@ class JustificationRepository {
     final rows = await SupabaseClientProvider.client
         .from('justificatifs')
         .select(
-          'id, student_id, presence_id, statut, file_url, reason, '
+          'id, student_id, presence_id, status, file_url, reason, '
           'rejection_reason, created_at, reviewed_at, '
           'users!student_id(first_name, last_name, email), '
           'presences(sessions(seances(date, start_time, end_time, '
