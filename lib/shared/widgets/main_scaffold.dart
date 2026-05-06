@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../accueil/accueil_screen.dart';
+import '../../accueil/accueil_page.dart';
 import 'placeholder_screen.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -14,7 +14,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   int _selectedIndex = 0;
 
   static final List<Widget> _screens = [
-    const AccueilScreen(),
+    const AccueilPage(),
     const PlaceholderScreen(title: 'Calendrier'),
     const PlaceholderScreen(title: 'Mes cours'),
     const PlaceholderScreen(title: 'Ressources'),
