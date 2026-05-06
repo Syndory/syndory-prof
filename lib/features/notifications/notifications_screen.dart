@@ -9,7 +9,8 @@ final List<AppNotification> _mockNotifications = [
     id: null,
     category: NotificationCategory.sessionOpened,
     title: 'Nouvelle séance publiée',
-    message: 'Une séance pour la classe 3ème A a été publiée. Vérifiez votre planning.',
+    message:
+        'Une séance pour la classe 3ème A a été publiée. Vérifiez votre planning.',
     isRead: false,
     createdAt: DateTime.now().subtract(const Duration(minutes: 12)),
   ),
@@ -52,9 +53,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   void initState() {
     super.initState();
-    _useBackend = SupabaseClientProvider.isInitialized &&
+    _useBackend =
+        SupabaseClientProvider.isInitialized &&
         SupabaseClientProvider.client.auth.currentSession != null;
-    
+
     if (_useBackend) {
       unawaited(_initNotificationsService());
     }

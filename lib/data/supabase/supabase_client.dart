@@ -18,7 +18,10 @@ class SupabaseClientProvider {
     return Supabase.instance.client;
   }
 
-  static Future<bool> init({required String url, required String anonKey}) async {
+  static Future<bool> init({
+    required String url,
+    required String anonKey,
+  }) async {
     if (url.trim().isEmpty || anonKey.trim().isEmpty) {
       return false;
     }

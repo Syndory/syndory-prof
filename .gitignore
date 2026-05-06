@@ -58,3 +58,6 @@ sup_signin*.json
 
 # Direnv
 .envrc
+
+# HTML specs
+PROF-07a-mes-classes/

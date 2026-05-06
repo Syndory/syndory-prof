@@ -16,7 +16,8 @@ class _DebugHealthScreenState extends State<DebugHealthScreen> {
 
   Future<void> _runTestCall() async {
     final bool isSupabaseInitialized = SupabaseClientProvider.isInitialized;
-    final bool isAuthenticated = isSupabaseInitialized &&
+    final bool isAuthenticated =
+        isSupabaseInitialized &&
         SupabaseClientProvider.client.auth.currentSession != null;
 
     if (!isSupabaseInitialized) {
@@ -65,7 +66,8 @@ class _DebugHealthScreenState extends State<DebugHealthScreen> {
   Widget build(BuildContext context) {
     final bool isSupabaseInitialized = SupabaseClientProvider.isInitialized;
 
-    final bool isAuthenticated = isSupabaseInitialized &&
+    final bool isAuthenticated =
+        isSupabaseInitialized &&
         SupabaseClientProvider.client.auth.currentSession != null;
 
     final bool canRunDbTest =
@@ -109,8 +111,8 @@ class _DebugHealthScreenState extends State<DebugHealthScreen> {
                   _isRunningTestCall
                       ? 'Test en cours…'
                       : (isAuthenticated
-                          ? 'Lire 1 ligne depuis la table users'
-                          : 'Lire 1 ligne depuis la table users (login requis)'),
+                            ? 'Lire 1 ligne depuis la table users'
+                            : 'Lire 1 ligne depuis la table users (login requis)'),
                 ),
               ),
             ),
@@ -144,10 +146,7 @@ class _KeyValueRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(label)),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );
