@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'resources_models.dart';
+import '../models/resources_models.dart';
+import '../screens/resource_detail_screen.dart';
 
 
 const List<SubjectResource> _demoSubjects = [
@@ -198,7 +199,14 @@ class _SubjectCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ResourceDetailScreen(subject: subject),
+              ),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
