@@ -23,24 +23,39 @@ void main() {
       expect(notification.isRead, true);
     });
 
-    test('AppNotification.fromMap should handle null or missing fields gracefully', () {
-      final map = <String, dynamic>{};
+    test(
+      'AppNotification.fromMap should handle null or missing fields gracefully',
+      () {
+        final map = <String, dynamic>{};
 
-      final notification = AppNotification.fromMap(map);
+        final notification = AppNotification.fromMap(map);
 
-      expect(notification.id, null);
-      expect(notification.category, NotificationCategory.unknown);
-      expect(notification.title, 'Notification');
-      expect(notification.message, '');
-      expect(notification.isRead, false);
-      expect(notification.createdAt, isA<DateTime>());
-    });
+        expect(notification.id, null);
+        expect(notification.category, NotificationCategory.unknown);
+        expect(notification.title, 'Notification');
+        expect(notification.message, '');
+        expect(notification.isRead, false);
+        expect(notification.createdAt, isA<DateTime>());
+      },
+    );
 
     test('NotificationCategory parsing should map correctly', () {
-      expect(NotificationCategoryParse.parse('session_opened'), NotificationCategory.sessionOpened);
-      expect(NotificationCategoryParse.parse('new_resource'), NotificationCategory.newResource);
-      expect(NotificationCategoryParse.parse('unknown_type'), NotificationCategory.unknown);
-      expect(NotificationCategoryParse.parse(null), NotificationCategory.unknown);
+      expect(
+        NotificationCategoryParse.parse('session_opened'),
+        NotificationCategory.sessionOpened,
+      );
+      expect(
+        NotificationCategoryParse.parse('new_resource'),
+        NotificationCategory.newResource,
+      );
+      expect(
+        NotificationCategoryParse.parse('unknown_type'),
+        NotificationCategory.unknown,
+      );
+      expect(
+        NotificationCategoryParse.parse(null),
+        NotificationCategory.unknown,
+      );
     });
 
     test('AppNotification.copyWith should update fields', () {

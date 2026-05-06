@@ -106,7 +106,7 @@ class NotificationService {
             .cast<Map<String, dynamic>>()
             .map(AppNotification.fromMap)
             .toList();
-        
+
         notifications.value = parsed;
         _updateUnreadCount();
       }
@@ -118,7 +118,7 @@ class NotificationService {
   void _handleNewNotification(Map<String, dynamic> record) {
     final notification = AppNotification.fromMap(record);
     final updatedList = List<AppNotification>.from(notifications.value);
-    
+
     // Insert at the top
     updatedList.insert(0, notification);
     notifications.value = updatedList;
@@ -128,7 +128,7 @@ class NotificationService {
   void _handleUpdatedNotification(Map<String, dynamic> record) {
     final updatedNotification = AppNotification.fromMap(record);
     final updatedList = List<AppNotification>.from(notifications.value);
-    
+
     final index = updatedList.indexWhere((n) => n.id == updatedNotification.id);
     if (index != -1) {
       updatedList[index] = updatedNotification;
@@ -170,7 +170,9 @@ class NotificationService {
     if (unreadCount.value == 0) return;
 
     // Optimistic update
-    final updatedList = notifications.value.map((n) => n.copyWith(isRead: true)).toList();
+    final updatedList = notifications.value
+        .map((n) => n.copyWith(isRead: true))
+        .toList();
     notifications.value = updatedList;
     _updateUnreadCount();
 
