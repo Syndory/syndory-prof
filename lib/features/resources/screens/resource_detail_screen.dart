@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:syndory_prof/app/theme/app_theme.dart';
 import '../models/document_model.dart';
 import '../widgets/subject_header_card.dart';
 import '../widgets/document_tile.dart';
 import '../widgets/document_tile_shimmer.dart';
+import '../screens/add_document_screen.dart';
 
 enum ResourceState { loading, empty, success }
 
@@ -20,42 +22,74 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
   List<DocumentModel> _filteredDocuments = [];
 
   final List<DocumentModel> _mockDocuments = const [
-    DocumentModel(id: '1', title: 'Cours 01 - Introduction SQL', date: '28 avr.', fileSize: '1.2 MB', fileType: 'pdf'),
-    DocumentModel(id: '2', title: 'TD 02 - Modélisation E/R', date: '25 avr.', fileSize: '850 KB', fileType: 'pdf'),
-    DocumentModel(id: '3', title: 'Projet de groupe - Consignes', date: '20 avr.', fileSize: '450 KB', fileType: 'docx'),
-    DocumentModel(id: '4', title: 'Annales Exam 2023', date: '15 avr.', fileSize: '2.1 MB', fileType: 'pdf'),
+    DocumentModel(
+      id: '1',
+      title: 'Cours 01 - Introduction SQL',
+      date: '28 avr.',
+      fileSize: '1.2 MB',
+      fileType: 'pdf',
+    ),
+    DocumentModel(
+      id: '2',
+      title: 'TD 02 - Modélisation E/R',
+      date: '25 avr.',
+      fileSize: '850 KB',
+      fileType: 'pdf',
+    ),
+    DocumentModel(
+      id: '3',
+      title: 'Projet de groupe - Consignes',
+      date: '20 avr.',
+      fileSize: '450 KB',
+      fileType: 'docx',
+    ),
+    DocumentModel(
+      id: '4',
+      title: 'Annales Exam 2023',
+      date: '15 avr.',
+      fileSize: '2.1 MB',
+      fileType: 'pdf',
+    ),
   ];
 
   @override
   void initState() {
     super.initState();
-    _allDocuments = _mockDocuments;
+    _allDocuments = List.from(_mockDocuments);
     _filteredDocuments = _allDocuments;
     _loadResources();
   }
 
   Future<void> _loadResources() async {
     setState(() => _state = ResourceState.loading);
-    await Future.delayed(const Duration(milliseconds: 800)); // Simulation chargement
+    await Future.delayed(
+      const Duration(milliseconds: 800),
+    ); // Simulation chargement
     if (mounted) {
       setState(() {
-        _state = _filteredDocuments.isEmpty ? ResourceState.empty : ResourceState.success;
+        _state = _filteredDocuments.isEmpty
+            ? ResourceState.empty
+            : ResourceState.success;
       });
     }
   }
 
   void _onSearchChanged(String query) async {
     setState(() => _state = ResourceState.loading);
-    
+
     // On simule un court délai de recherche pour voir le Shimmer
     await Future.delayed(const Duration(milliseconds: 500));
 
     if (mounted) {
       setState(() {
         _filteredDocuments = _allDocuments
-            .where((doc) => doc.title.toLowerCase().contains(query.toLowerCase()))
+            .where(
+              (doc) => doc.title.toLowerCase().contains(query.toLowerCase()),
+            )
             .toList();
-        _state = _filteredDocuments.isEmpty ? ResourceState.empty : ResourceState.success;
+        _state = _filteredDocuments.isEmpty
+            ? ResourceState.empty
+            : ResourceState.success;
       });
     }
   }
@@ -71,7 +105,7 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
           icon: const Icon(Icons.chevron_left),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Bases de données'),
+        title: const Text('Bases de données', style: TextStyle(color: AppTheme.primaryBlue),),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none),
@@ -98,7 +132,10 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
                     decoration: InputDecoration(
                       hintText: 'Rechercher un document...',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: Colors.grey.shade400,
+                      ),
                       filled: true,
                       fillColor: theme.colorScheme.surface,
                       contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -127,21 +164,43 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  return DocumentTile(
-                    document: _filteredDocuments[index],
-                    onDelete: () {},
-                  );
-                },
-                childCount: _filteredDocuments.length,
-              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                return DocumentTile(
+                  document: _filteredDocuments[index],
+                  onDelete: () {},
+                );
+              }, childCount: _filteredDocuments.length),
             ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {}, // Ne fait rien
+        onPressed: () async {
+          // Affichage de la page d'ajout d'un document
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddDocumentScreen()),
+          );
+
+          // Si on a reçu un document (le résultat n'est pas nul)
+          if (result != null && result is DocumentModel) {
+            setState(() {
+              // On l'ajoute en haut de nos listes
+              _allDocuments.insert(0, result);
+              _filteredDocuments = List.from(_allDocuments);
+              _state = ResourceState.success;
+            });
+          }
+
+          // Affichage du message de succès 
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(" Document publié avec succès !"),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
         backgroundColor: theme.colorScheme.primary,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -198,7 +257,11 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
                 ),
               ],
             ),
-            child: const Icon(Icons.insert_drive_file_outlined, size: 48, color: Color(0xFFC7C7CC)),
+            child: const Icon(
+              Icons.insert_drive_file_outlined,
+              size: 48,
+              color: Color(0xFFC7C7CC),
+            ),
           ),
           const SizedBox(height: 32),
           Text(
