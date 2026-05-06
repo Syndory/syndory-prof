@@ -5,7 +5,7 @@ abstract final class AppTheme {
   static const Color primaryOrange = Color(0xFFF4820A);
   static const Color primaryBlue = Color(0xFF001F3F);
   static const Color backgroundGray = Color(0xFFF5F5F7);
-  static const Color textPrimary = Color(0xFF1A1A1A);
+  static const Color textPrimary = Color(0xFF001F3F);
   static const Color textSecondary = Color(0xFF8E8E93);
   static const Color iconInactive = Color(0xFFC7C7CC);
 
@@ -77,7 +77,7 @@ abstract final class AppTheme {
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
-      selectedItemColor: primaryOrange,
+      selectedItemColor: primaryBlue,
       unselectedItemColor: textSecondary,
       type: BottomNavigationBarType.fixed,
       selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
