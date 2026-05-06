@@ -13,6 +13,8 @@ class PreSessionScreen extends StatefulWidget {
 
 class _PreSessionScreenState extends State<PreSessionScreen> {
   int _markingWindow = 10; // minutes
+  bool isSessionAlreadyOpen = false; // Simulated state
+
 
   void _incrementWindow() {
     setState(() {
@@ -173,160 +175,204 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                           ),
                         ),
                         
-                        const SizedBox(height: 24),
-
-                        // Geo Section
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x14092C4C),
-                                offset: Offset(0, 2),
-                                blurRadius: 12,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        if (isSessionAlreadyOpen) ...[
+                          const SizedBox(height: 24),
+                          Column(
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Géolocalisation',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: primary,
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: bg,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Text(
-                                      'Rayon : 80 m',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: gray3,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
                               Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: successDim,
-                                  borderRadius: BorderRadius.circular(12),
+                                width: 64,
+                                height: 64,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFDF6E3), // --alert-dim
+                                  shape: BoxShape.circle,
                                 ),
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.check, color: success, size: 24),
-                                    const SizedBox(width: 12),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Vous êtes dans la salle ✓',
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: success,
-                                          ),
-                                        ),
-                                        Text(
-                                          'Position validée à l\'instant',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: success,
-                                            opacity: 0.8,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                child: const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: Color(0xFFE2B93B), // --alert
+                                  size: 32,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Config Section
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x14092C4C),
-                                offset: Offset(0, 2),
-                                blurRadius: 12,
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
+                              const SizedBox(height: 16),
                               const Text(
-                                'Fenêtre de marquage',
+                                'Session déjà ouverte',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                   color: primary,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Temps accordé aux étudiants pour scanner le QR Code et marquer leur présence.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: gray2,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: bg,
-                                  borderRadius: BorderRadius.circular(9999),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    _StepperButton(
-                                      label: '-',
-                                      onPressed: _decrementWindow,
-                                      disabled: _markingWindow <= 5,
-                                    ),
-                                    Text(
-                                      '$_markingWindow min',
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w800,
-                                        color: primary,
-                                      ),
-                                    ),
-                                    _StepperButton(
-                                      label: '+',
-                                      onPressed: _incrementWindow,
-                                    ),
-                                  ],
+                              const SizedBox(height: 8),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'Vous avez déjà une session active en cours pour cette matière. Vous ne pouvez ouvrir qu\'une seule session à la fois.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: gray2,
+                                    lineHeight: 1.4,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        ),
+                        ] else ...[
+                          const SizedBox(height: 24),
+
+                          // Geo Section
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x14092C4C),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text(
+                                      'Géolocalisation',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: primary,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: bg,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        'Rayon : 80 m',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: gray3,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: successDim,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.check, color: success, size: 24),
+                                      const SizedBox(width: 12),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Vous êtes dans la salle ✓',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: success,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Position validée à l\'instant',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: success,
+                                              opacity: 0.8,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Config Section
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x14092C4C),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Fenêtre de marquage',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Temps accordé aux étudiants pour scanner le QR Code et marquer leur présence.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: gray2,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: bg,
+                                    borderRadius: BorderRadius.circular(9999),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _StepperButton(
+                                        label: '-',
+                                        onPressed: _decrementWindow,
+                                        disabled: _markingWindow <= 5,
+                                      ),
+                                      Text(
+                                        '$_markingWindow min',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                          color: primary,
+                                        ),
+                                      ),
+                                      _StepperButton(
+                                        label: '+',
+                                        onPressed: _incrementWindow,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
                         const SizedBox(height: 100), // Space for fixed button
                       ],
                     ),
@@ -355,28 +401,58 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                   stops: const [0, 0.4, 1],
                 ),
               ),
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Start session
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(9999),
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: isSessionAlreadyOpen ? () {
+                      // Navigate to active session
+                    } : () {
+                      // Navigate to active session
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSessionAlreadyOpen ? gray5 : primary,
+                      foregroundColor: isSessionAlreadyOpen ? gray3 : Colors.white,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(9999),
+                      ),
+                      elevation: isSessionAlreadyOpen ? 0 : 8,
+                      shadowColor: primary.withOpacity(0.4),
+                    ),
+                    child: const Text(
+                      'Ouvrir la session',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
-                  elevation: 8,
-                  shadowColor: primary.withOpacity(0.4),
-                ),
-                child: const Text(
-                  'Ouvrir la session',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                  if (isSessionAlreadyOpen) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: () {
+                        // Navigate to active session
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: primary),
+                        foregroundColor: primary,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(9999),
+                        ),
+                      ),
+                      child: const Text(
+                        'Rejoindre la session en cours',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
+
             ),
           ),
         ],
