@@ -212,7 +212,7 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: gray2,
-                                    lineHeight: 1.4,
+                                    height: 1.4,
                                   ),
                                 ),
                               ),
@@ -273,7 +273,7 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                                     color: successDim,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     children: [
                                       Icon(Icons.check, color: success, size: 24),
                                       const SizedBox(width: 12),
@@ -292,8 +292,7 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                                             'Position validée à l\'instant',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: success,
-                                              opacity: 0.8,
+                                              color: success.withOpacity(0.8),
                                             ),
                                           ),
                                         ],
@@ -563,9 +562,9 @@ class _DetailRow extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF092C4C),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF092C4C), // primary
                   ),
                 ),
                 Text(

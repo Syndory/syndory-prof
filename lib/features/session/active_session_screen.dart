@@ -220,7 +220,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                                 child: LinearProgressIndicator(
                                   value: _progress,
                                   backgroundColor: gray5,
-                                  color: success,
+                                  color: gray2,
                                   minHeight: 8,
                                 ),
                               ),
@@ -322,7 +322,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w800,
-                                  color: primary,
+                                  color: Color(0xFF092C4C), // primary
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -330,8 +330,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                                 'Êtes-vous sûr de vouloir clore la session ? Les étudiants n\'ayant pas marqué seront enregistrés comme absents.',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: gray2,
-                                  lineHeight: 1.5,
+                                  color: Color(0xFF4F4F4F), // gray2
+                                  height: 1.5,
                                 ),
                               ),
                               const SizedBox(height: 24),
@@ -533,7 +533,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.white70,
-                          lineHeight: 1.4,
+                          height: 1.4,
                         ),
                       ),
                     ),

@@ -68,12 +68,12 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
                             onPressed: () => Navigator.pop(context),
                           ),
                           const SizedBox(width: 12),
-                          const Text(
+                          Text(
                             'Récapitulatif',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: primary,
+                              color: Color(0xFF092C4C), // primary
                               letterSpacing: -0.18,
                             ),
                           ),
@@ -227,7 +227,7 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: primary,
+                    color: Color(0xFF092C4C), // primary
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -327,7 +327,7 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
               style: TextStyle(
                 fontSize: 14,
                 color: Color(0xFF4F4F4F),
-                lineHeight: 1.4,
+                height: 1.4,
               ),
             ),
           ],
@@ -573,10 +573,10 @@ class _StudentItem extends StatelessWidget {
               children: [
                 Text(
                   student.name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF333333),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF092C4C),
                   ),
                 ),
                 const Text(
