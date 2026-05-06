@@ -11,113 +11,151 @@ class Calendrier extends StatefulWidget {
 }
 
 class _CalendrierState extends State<Calendrier> {
-  DateTime currentWeekStart = DateTime.now()
-      .subtract(Duration(days: DateTime.now().weekday - 1));
+  DateTime currentWeekStart =
+      DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
 
   String selectedFilter = "Toutes";
+
+  // ─── État courant du calendrier ───────────────────────────────────────────
+  // Changer cette valeur pour tester les 3 états :
+  //   CalendrierEtat.normal      → vue normale avec les séances
+  //   CalendrierEtat.semaineVide → semaine sans séances
+  //   CalendrierEtat.erreur      → erreur de chargement
+  CalendrierEtat _etat = CalendrierEtat.normal;
 
   String get weekLabel {
     final weekEnd = currentWeekStart.add(const Duration(days: 6));
     return "${DateFormat('d MMM', 'fr_FR').format(currentWeekStart)} — "
-           "${DateFormat('d MMM yyyy', 'fr_FR').format(weekEnd)}";
+        "${DateFormat('d MMM yyyy', 'fr_FR').format(weekEnd)}";
   }
 
   void _changeWeek(int delta) {
     setState(() {
       currentWeekStart = currentWeekStart.add(Duration(days: 7 * delta));
+      // TODO : déclencher un appel API ici et mettre à jour _etat :
+      //   _etat = CalendrierEtat.normal      si données reçues
+      //   _etat = CalendrierEtat.semaineVide si liste vide
+      //   _etat = CalendrierEtat.erreur      si erreur réseau
+    });
+  }
+
+  void _reessayer() {
+    setState(() {
+      // TODO : relancer l'appel API et mettre à jour _etat selon la réponse
+      _etat = CalendrierEtat.normal;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now();
-
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 252, 252, 253),
+      backgroundColor: const Color(0xFFFCFCFD),
       appBar: AppBar(
+        backgroundColor: const Color(0xFFFCFCFD),
+        elevation: 0,
+        titleSpacing: 16,
+        automaticallyImplyLeading: false,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'Mon Calendrier',
+              'Mon calendrier',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 18, 0, 70),
+                color: Color(0xFF120046),
               ),
             ),
             Stack(
               children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: const Color.fromARGB(255, 253, 253, 253),
-                  child: const Icon(Icons.notifications, size: 28, color: Color.fromARGB(255, 225, 223, 223)),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF3F3F3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.notifications_outlined,
+                    size: 20,
+                    color: Color(0xFFB0AEC0),
+                  ),
                 ),
-                // Badge de notification
                 Positioned(
                   right: 0,
                   top: 0,
                   child: Container(
-                    padding: const EdgeInsets.all(2),
+                    width: 16,
+                    height: 16,
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 1.5),
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
-                    ),
-                    child: const Text(
-                      '2',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                    child: const Center(
+                      child: Text(
+                        '2',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Barre de navigation semaine
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 255, 255, 255),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: () => _changeWeek(-1),
-                ),
-                Text(
-                  weekLabel,
-                  style: const TextStyle(
-                      fontSize: 16, 
-                      fontWeight: FontWeight.bold,
-                      color: Color.fromARGB(255, 4, 0, 66),
-                      ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: () => _changeWeek(1),
-                ),
-              ],
+          // ─── Navigation semaine ─────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFEEEEEE)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left, size: 20),
+                    color: const Color(0xFF120046),
+                    onPressed: () => _changeWeek(-1),
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                  ),
+                  Text(
+                    weekLabel,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF040042),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, size: 20),
+                    color: const Color(0xFF120046),
+                    onPressed: () => _changeWeek(1),
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // Barre de filtres
+          // ─── Filtres par classe ─────────────────────────────────────────
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
                 _buildFilterChip("Toutes"),
@@ -128,11 +166,13 @@ class _CalendrierState extends State<Calendrier> {
             ),
           ),
 
-          // Calendrier (sera relié à kalender.dart)
+          // ─── Contenu principal selon l'état ────────────────────────────
           Expanded(
             child: KalenderPage(
               currentWeekStart: currentWeekStart,
               selectedFilter: selectedFilter,
+              etat: _etat,
+              onReessayer: _reessayer,
             ),
           ),
         ],
@@ -141,16 +181,32 @@ class _CalendrierState extends State<Calendrier> {
   }
 
   Widget _buildFilterChip(String label) {
+    final bool isSelected = selectedFilter == label;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selectedFilter == label,
-        onSelected: (selected) {
-          setState(() {
-            selectedFilter = label;
-          });
-        },
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: () => setState(() => selectedFilter = label),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF0D1B3E) : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFF0D1B3E)
+                  : const Color(0xFFDDDDDD),
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: isSelected ? Colors.white : const Color(0xFF555555),
+            ),
+          ),
+        ),
       ),
     );
   }
