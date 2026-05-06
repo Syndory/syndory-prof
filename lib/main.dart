@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'app/env/app_env.dart';
 import 'app/app_bootstrap.dart';
@@ -13,7 +14,6 @@ Future<void> main() async {
       anonKey: AppEnv.supabaseAnonKey,
     );
   }
-
   runApp(const AppBootstrap());
 }
 
