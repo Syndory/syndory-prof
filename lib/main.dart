@@ -40,4 +40,5 @@ Future<void> main() async {
   }
 
   runApp(const AppBootstrap());
+<<<<<<< HEAD
 }
