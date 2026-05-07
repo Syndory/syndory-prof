@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../app/theme/app_theme.dart';
 import '../../data/supabase/supabase_client.dart';
 import '../../app/navigation/main_shell.dart';
+import 'auth_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -94,86 +95,33 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background Gradient
-          Container(
-            decoration: const BoxDecoration(
-              color: AppTheme.surfaceDark,
-              gradient: RadialGradient(
-                center: Alignment.topRight,
-                radius: 1.5,
-                colors: [
-                  Color(0xFF1A2A40),
-                  AppTheme.surfaceDark,
-                ],
+      backgroundColor: const Color(0xFFF5F5F3),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            children: [
+              const SizedBox(height: 60),
+              // Logo & Brand
+              const _HeroSection(),
+              const SizedBox(height: 40),
+              // Login Card
+              _LoginCard(
+                emailController: _emailController,
+                passwordController: _passwordController,
+                isLoading: _isLoading,
+                obscurePassword: _obscurePassword,
+                errorMessage: _errorMessage,
+                onTogglePassword: () {
+                  setState(() => _obscurePassword = !_obscurePassword);
+                },
+                onLogin: _signIn,
+                onForgotPassword: _showForgotPasswordSheet,
               ),
-            ),
+              const SizedBox(height: 40),
+            ],
           ),
-          // Decorative Blobs (simplified)
-          Positioned(
-            top: -100,
-            left: -100,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.primaryDim.withValues(alpha: 0.4),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: -50,
-            right: -50,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppTheme.secondaryDim.withValues(alpha: 0.3),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Content
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 60),
-                  // Logo & Brand
-                  const _HeroSection(),
-                  const SizedBox(height: 40),
-                  // Login Card
-                  _LoginCard(
-                    emailController: _emailController,
-                    passwordController: _passwordController,
-                    isLoading: _isLoading,
-                    obscurePassword: _obscurePassword,
-                    errorMessage: _errorMessage,
-                    onTogglePassword: () {
-                      setState(() => _obscurePassword = !_obscurePassword);
-                    },
-                    onLogin: _signIn,
-                    onForgotPassword: _showForgotPasswordSheet,
-                  ),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -186,55 +134,18 @@ class _HeroSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.5),
-                    blurRadius: 28,
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppTheme.primaryLight, AppTheme.primary],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.25),
-                    blurRadius: 32,
-                    offset: const Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: CustomPaint(
-                painter: _LogoPainter(),
-              ),
-            ),
-          ],
+        Image.asset(
+          'assets/images/image.png',
+          height: 140,
         ),
         const SizedBox(height: 16),
         Text(
-          'Syndory',
-          style: Theme.of(context).textTheme.headlineLarge,
-        ),
-        const SizedBox(height: 6),
-        Text(
           'ESPACE PROFESSEUR',
-          style: Theme.of(context).textTheme.labelSmall,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: AppTheme.gray2,
+                letterSpacing: 1.5,
+                fontWeight: FontWeight.w600,
+              ),
         ),
       ],
     );
@@ -264,117 +175,127 @@ class _LoginCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.gray5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Connexion',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Saisissez vos identifiants administrés.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 24),
-              // Email Field
-              Text('Email', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 6),
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  hintText: 'prenom.nom@ecole.tld',
-                  suffixIcon: Icon(Icons.alternate_email, color: AppTheme.gray4),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Connexion',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.secondary,
                 ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Saisissez vos identifiants administrés.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.gray2,
+                ),
+          ),
+          const SizedBox(height: 24),
+          // Email Field
+          Text('Email', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          TextField(
+            controller: emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              hintText: 'prenom.nom@ecole.tld',
+              suffixIcon: Icon(Icons.alternate_email, color: AppTheme.gray4),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Password Field
+          Text('Mot de passe', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          TextField(
+            controller: passwordController,
+            obscureText: obscurePassword,
+            decoration: InputDecoration(
+              hintText: '••••••••',
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscurePassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: AppTheme.gray4,
+                ),
+                onPressed: onTogglePassword,
               ),
-              const SizedBox(height: 16),
-              // Password Field
-              Text('Mot de passe', style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 6),
-              TextField(
-                controller: passwordController,
-                obscureText: obscurePassword,
-                decoration: InputDecoration(
-                  hintText: '••••••••',
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                      color: AppTheme.gray4,
+            ),
+          ),
+          if (errorMessage != null) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.errorDim,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.error.withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline,
+                      color: AppTheme.error, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      errorMessage!,
+                      style:
+                          const TextStyle(color: AppTheme.error, fontSize: 14),
                     ),
-                    onPressed: onTogglePassword,
                   ),
-                ),
+                ],
               ),
-              if (errorMessage != null) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.errorDim,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error_outline, color: AppTheme.error, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          errorMessage!,
-                          style: const TextStyle(color: AppTheme.error, fontSize: 14),
-                        ),
+            ),
+          ],
+          const SizedBox(height: 24),
+          // Submit Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isLoading ? null : onLogin,
+              child: isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
                       ),
-                    ],
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : onLogin,
-                  child: isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text('Se connecter'),
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Forgot Password
-              Center(
-                child: TextButton(
-                  onPressed: onForgotPassword,
-                  child: const Text(
-                    'Mot de passe oublié ?',
-                    style: TextStyle(
-                      color: Color(0xFF2F80ED),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                    )
+                  : const Text('Se connecter'),
+            ),
           ),
-        ),
+          const SizedBox(height: 4),
+          // Forgot Password
+          Center(
+            child: TextButton(
+              onPressed: onForgotPassword,
+              child: const Text(
+                'Mot de passe oublié ?',
+                style: TextStyle(
+                  color: Color(0xFF2F80ED),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -503,53 +424,4 @@ class _ForgotPasswordSheetState extends State<ForgotPasswordSheet> {
       ),
     );
   }
-}
-
-class _LogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 2.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path1 = Path();
-    // M7 14.5C8.7 16.8 11 18 13.5 18C17.1 18 20 15.1 20 11.5C20 7.9 17.1 5 13.5 5C11 5 8.7 6.2 7 8.5
-    // Normalize to 24x24 viewbox and scale to size
-    final scaleX = size.width / 24;
-    final scaleY = size.height / 24;
-
-    path1.moveTo(7 * scaleX, 14.5 * scaleY);
-    path1.cubicTo(
-      8.7 * scaleX, 16.8 * scaleY,
-      11 * scaleX, 18 * scaleY,
-      13.5 * scaleX, 18 * scaleY,
-    );
-    path1.cubicTo(
-      17.1 * scaleX, 18 * scaleY,
-      20 * scaleX, 15.1 * scaleY,
-      20 * scaleX, 11.5 * scaleY,
-    );
-    path1.cubicTo(
-      20 * scaleX, 7.9 * scaleY,
-      17.1 * scaleX, 5 * scaleY,
-      13.5 * scaleX, 5 * scaleY,
-    );
-    path1.cubicTo(
-      11 * scaleX, 5 * scaleY,
-      8.7 * scaleX, 6.2 * scaleY,
-      7 * scaleX, 8.5 * scaleY,
-    );
-    canvas.drawPath(path1, paint);
-
-    final path2 = Path();
-    // M4 12H12
-    path2.moveTo(4 * scaleX, 12 * scaleY);
-    path2.lineTo(12 * scaleX, 12 * scaleY);
-    canvas.drawPath(path2, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
