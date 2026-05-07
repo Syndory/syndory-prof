@@ -232,7 +232,7 @@ class _JustificationDetailPageState extends State<JustificationDetailPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: j.status.color.withOpacity(0.1),
+        color: j.status.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

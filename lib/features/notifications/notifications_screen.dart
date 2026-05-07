@@ -1,44 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:syndory_prof/data/supabase/supabase_client.dart';
 import 'notification_models.dart';
 import 'notification_service.dart';
-
-final List<AppNotification> _mockNotifications = [
-  AppNotification(
-    id: null,
-    category: NotificationCategory.sessionOpened,
-    title: 'Nouvelle séance publiée',
-    message:
-        'Une séance pour la classe 3ème A a été publiée. Vérifiez votre planning.',
-    isRead: false,
-    createdAt: DateTime.now().subtract(const Duration(minutes: 12)),
-  ),
-  AppNotification(
-    id: null,
-    category: NotificationCategory.newResource,
-    title: 'Ressource partagée',
-    message: 'Un nouveau document a été ajouté à votre cours de mathématiques.',
-    isRead: false,
-    createdAt: DateTime.now().subtract(const Duration(hours: 3, minutes: 20)),
-  ),
-  AppNotification(
-    id: null,
-    category: NotificationCategory.examReminder,
-    title: 'Rappel examen',
-    message: 'Rappel : préparation de l’examen de physique demain à 9h.',
-    isRead: true,
-    createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
-  ),
-  AppNotification(
-    id: null,
-    category: NotificationCategory.announcement,
-    title: 'Annonce importante',
-    message: 'Le service informatique effectue une maintenance cette nuit.',
-    isRead: true,
-    createdAt: DateTime.now().subtract(const Duration(days: 2, hours: 6)),
-  ),
-];
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -48,18 +11,10 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  late final bool _useBackend;
-
   @override
   void initState() {
     super.initState();
-    _useBackend =
-        SupabaseClientProvider.isInitialized &&
-        SupabaseClientProvider.client.auth.currentSession != null;
-
-    if (_useBackend) {
-      unawaited(_initNotificationsService());
-    }
+    unawaited(_initNotificationsService());
   }
 
   Future<void> _initNotificationsService() async {
@@ -71,31 +26,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _markAllAsRead() async {
-    if (_useBackend) {
-      await NotificationService().markAllAsRead();
-    } else {
-      // Mock UI handling
-      setState(() {
-        for (var i = 0; i < _mockNotifications.length; i++) {
-          _mockNotifications[i] = _mockNotifications[i].copyWith(isRead: true);
-        }
-      });
-    }
+    await NotificationService().markAllAsRead();
   }
 
   Future<void> _markAsRead(AppNotification notification) async {
     if (notification.isRead) return;
 
-    if (_useBackend) {
-      await NotificationService().markAsRead(notification);
-    } else {
-      setState(() {
-        final index = _mockNotifications.indexOf(notification);
-        if (index != -1) {
-          _mockNotifications[index] = notification.copyWith(isRead: true);
-        }
-      });
-    }
+    await NotificationService().markAsRead(notification);
   }
 
   String _formatDate(DateTime date) {
@@ -118,29 +55,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _useBackend ? _buildLiveList() : _buildMockList();
-  }
-
-  Widget _buildMockList() {
-    final unreadCount = _mockNotifications.where((n) => !n.isRead).length;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-        centerTitle: true,
-        actions: [
-          if (_mockNotifications.isNotEmpty && unreadCount > 0)
-            TextButton(
-              onPressed: _markAllAsRead,
-              child: const Text(
-                'Tout lire',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-        ],
-      ),
-      body: _buildBody(_mockNotifications),
-    );
+    return _buildLiveList();
   }
 
   Widget _buildLiveList() {
@@ -194,7 +109,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       physics: const AlwaysScrollableScrollPhysics(),
       itemCount: notifications.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final notification = notifications[index];
         return _buildNotificationCard(notification);
@@ -275,7 +190,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           horizontal: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: notification.category.color.withOpacity(0.12),
+                          color: notification.category.color.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(

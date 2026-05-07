@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../data/models/seance_model.dart';
 import '../data/supabase/supabase_client.dart';
 import 'accueil_error.dart';
 import 'accueil_loaded.dart';
@@ -33,8 +34,8 @@ class _AccueilPageState extends State<AccueilPage> {
   }
 
   void _load() => setState(() {
-        _future = _fetchData();
-      });
+    _future = _fetchData();
+  });
 
   Future<AccueilLoadedData> _fetchData() async {
     final client = SupabaseClientProvider.client;
@@ -61,7 +62,7 @@ class _AccueilPageState extends State<AccueilPage> {
       lastName: userMap['last_name'] as String? ?? '',
       pendingJustificatifs: pendingCount,
       todaySeances: seancesList
-          .map((e) => SeanceItem.fromJson(e as Map<String, dynamic>))
+          .map((e) => SeanceModel.fromJson(e as Map<String, dynamic>))
           .toList(),
       classes: classes,
     );
@@ -75,8 +76,7 @@ class _AccueilPageState extends State<AccueilPage> {
         .single();
   }
 
-  Future<List<dynamic>> _fetchTodaySeances(
-      String userId, String today) async {
+  Future<List<dynamic>> _fetchTodaySeances(String userId, String today) async {
     return await SupabaseClientProvider.client
         .from('seances')
         .select(
@@ -120,17 +120,19 @@ class _AccueilPageState extends State<AccueilPage> {
 
       if (uniqueClasses.isEmpty) return [];
 
-      final counts = await Future.wait(uniqueClasses.map((c) async {
-        try {
-          final students = await client
-              .from('student_classes')
-              .select('id')
-              .eq('class_id', c['id'] as String);
-          return (students as List).length;
-        } catch (_) {
-          return 0;
-        }
-      }));
+      final counts = await Future.wait(
+        uniqueClasses.map((c) async {
+          try {
+            final students = await client
+                .from('student_classes')
+                .select('id')
+                .eq('class_id', c['id'] as String);
+            return (students as List).length;
+          } catch (_) {
+            return 0;
+          }
+        }),
+      );
 
       return List.generate(
         uniqueClasses.length,
@@ -156,10 +158,7 @@ class _AccueilPageState extends State<AccueilPage> {
         if (snap.hasError) {
           return NoConnectionPage(onRetry: _load);
         }
-        return AccueilLoadedPage(
-          data: snap.requireData,
-          onRefresh: _load,
-        );
+        return AccueilLoadedPage(data: snap.requireData, onRefresh: _load);
       },
     );
   }

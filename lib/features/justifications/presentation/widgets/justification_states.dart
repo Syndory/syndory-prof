@@ -18,7 +18,7 @@ class JustificationEmptyState extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8EFF5).withOpacity(0.5),
+                color: const Color(0xFFE8EFF5).withValues(alpha: 0.5),
                 shape: BoxShape.circle,
               ),
               child: const Icon(

@@ -1,16 +1,21 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../data/repositories/session_repository.dart';
+import '../../data/repositories/classes_repository.dart';
+import '../../data/supabase/supabase_client.dart';
 import '../classes/models/models.dart';
 import 'session_recap_screen.dart';
-
+import '../notifications/notifications_screen.dart';
 
 class ActiveSessionScreen extends StatefulWidget {
   final ClassModel classInfo;
   final int initialTimerMinutes;
+  final String sessionId;
 
   const ActiveSessionScreen({
     super.key,
     required this.classInfo,
+    required this.sessionId,
     this.initialTimerMinutes = 10,
   });
 
@@ -24,33 +29,106 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
   bool _isClosed = false;
   bool _showClosureModal = false;
 
+  StreamSubscription? _presenceSubscription;
+  List<Map<String, dynamic>> _presences = [];
+  List<Map<String, dynamic>> _allStudents = [];
+  bool _isLoadingStudents = true;
 
   @override
   void initState() {
     super.initState();
     _secondsRemaining = widget.initialTimerMinutes * 60;
     _startTimer();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    try {
+      final students = await ClassesRepository.getStudentsForClass(
+        widget.classInfo.id,
+      );
+      if (mounted) {
+        setState(() {
+          _allStudents = List<Map<String, dynamic>>.from(students);
+          _isLoadingStudents = false;
+        });
+      }
+
+      _presenceSubscription = SupabaseClientProvider.client
+          .from('presences')
+          .stream(primaryKey: ['session_id', 'student_id'])
+          .eq('session_id', widget.sessionId)
+          .listen((data) {
+            if (mounted) {
+              setState(() {
+                _presences = List<Map<String, dynamic>>.from(data);
+              });
+            }
+          });
+    } catch (e) {
+      debugPrint('[ActiveSession] Error initializing data: $e');
+    }
   }
 
   @override
   void dispose() {
     _timer.cancel();
+    _presenceSubscription?.cancel();
     super.dispose();
   }
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
       setState(() {
         if (_secondsRemaining > 0) {
           _secondsRemaining--;
         } else {
-          _isClosed = true;
           _timer.cancel();
-          _navigateToRecap();
+          _handleAutoClose();
         }
       });
     });
   }
+
+  Future<void> _handleAutoClose() async {
+    try {
+      await SessionRepository.closeSession(widget.sessionId);
+    } catch (e) {
+      debugPrint('[ActiveSession] Auto-close error: $e');
+    }
+    if (mounted) {
+      setState(() {
+        _isClosed = true;
+      });
+      _navigateToRecap();
+    }
+  }
+
+  Future<void> _handleManualClose() async {
+    setState(() => _isLoadingClosure = true);
+    try {
+      await SessionRepository.closeSession(widget.sessionId);
+      if (mounted) {
+        setState(() {
+          _showClosureModal = false;
+          _isClosed = true;
+          _timer.cancel();
+        });
+        _navigateToRecap();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de la clôture: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingClosure = false);
+    }
+  }
+
+  bool _isLoadingClosure = false;
 
   void _navigateToRecap() {
     Future.delayed(const Duration(seconds: 3), () {
@@ -58,7 +136,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => SessionRecapScreen(classInfo: widget.classInfo),
+            builder: (context) =>
+                SessionRecapScreen(classInfo: widget.classInfo),
           ),
         );
       }
@@ -66,7 +145,6 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
   }
 
   void _extendSession() {
-
     setState(() {
       _secondsRemaining += 5 * 60;
     });
@@ -87,14 +165,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF092C4C);
     const Color primaryLight = Color(0xFF0D3A65);
-    const Color primaryDim = Color(0xFFE8EFF5);
-    const Color secondary = Color(0xFFF2994A);
-    const Color secondaryDim = Color(0xFFFEF3E7);
+    const Color bg = Color(0xFFF5F7FA);
+    const Color error = Color(0xFFEB5757);
     const Color success = Color(0xFF27AE60);
     const Color successDim = Color(0xFFE8F8EF);
-    const Color error = Color(0xFFEB5757);
-    const Color bg = Color(0xFFF5F7FA);
-    const Color gray1 = Color(0xFF333333);
     const Color gray2 = Color(0xFF4F4F4F);
     const Color gray3 = Color(0xFF828282);
     const Color gray5 = Color(0xFFE0E0E0);
@@ -109,7 +183,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -124,7 +201,14 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                       ),
                       _CircularButton(
                         icon: Icons.notifications_none,
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const NotificationsScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -137,7 +221,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                       children: [
                         // Banner
                         Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 16,
+                          ),
                           padding: const EdgeInsets.all(24),
                           width: double.infinity,
                           decoration: BoxDecoration(
@@ -171,7 +258,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                                 '${widget.classInfo.filiere} • Amphi B204',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
                             ],
@@ -237,7 +324,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(9999),
@@ -249,19 +339,19 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                                     ),
                                   ],
                                 ),
-                                child: const Row(
+                                child: Row(
                                   children: [
                                     Text(
-                                      '28',
-                                      style: TextStyle(
+                                      '${_presences.length}',
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
                                         color: primary,
                                       ),
                                     ),
                                     Text(
-                                      ' / 42 présents',
-                                      style: TextStyle(
+                                      ' / ${_allStudents.length} présents',
+                                      style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: gray3,
@@ -279,7 +369,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
 
                         // List Header
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 8,
+                          ),
                           child: Align(
                             alignment: Alignment.centerLeft,
                             child: Text(
@@ -292,156 +385,184 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                             ),
                           ),
                         ),
-          
-          // Closure Confirmation Modal
-          if (_showClosureModal && !_isClosed)
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => setState(() => _showClosureModal = false),
-                child: Container(
-                  color: Colors.black.withOpacity(0.6),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      GestureDetector(
-                        onTap: () {}, // Prevent closing when tapping modal
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(24),
-                              topRight: Radius.circular(24),
+
+                        // Closure Confirmation Modal
+                        if (_showClosureModal && !_isClosed)
+                          Positioned.fill(
+                            child: GestureDetector(
+                              onTap: () =>
+                                  setState(() => _showClosureModal = false),
+                              child: Container(
+                                color: Colors.black.withValues(alpha: 0.6),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    GestureDetector(
+                                      onTap:
+                                          () {}, // Prevent closing when tapping modal
+                                      child: Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          24,
+                                          32,
+                                          24,
+                                          40,
+                                        ),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(24),
+                                            topRight: Radius.circular(24),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Clore la session ?',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w800,
+                                                color: Color(
+                                                  0xFF092C4C,
+                                                ), // primary
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            const Text(
+                                              'Êtes-vous sûr de vouloir clore la session ? Les étudiants n\'ayant pas marqué seront enregistrés comme absents.',
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Color(
+                                                  0xFF4F4F4F,
+                                                ), // gray2
+                                                height: 1.5,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 24),
+                                            Column(
+                                              children: [
+                                                ElevatedButton(
+                                                  onPressed: _isLoadingClosure
+                                                      ? null
+                                                      : _handleManualClose,
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: error,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    minimumSize: const Size(
+                                                      double.infinity,
+                                                      56,
+                                                    ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            9999,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  child: _isLoadingClosure
+                                                      ? const CircularProgressIndicator(
+                                                          color: Colors.white,
+                                                        )
+                                                      : const Text(
+                                                          'Clore la session',
+                                                          style: TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                          ),
+                                                        ),
+                                                ),
+                                                const SizedBox(height: 12),
+                                                OutlinedButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _showClosureModal = false;
+                                                    });
+                                                  },
+                                                  style: OutlinedButton.styleFrom(
+                                                    side: const BorderSide(
+                                                      color: gray5,
+                                                    ),
+                                                    foregroundColor: gray2,
+                                                    minimumSize: const Size(
+                                                      double.infinity,
+                                                      56,
+                                                    ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            9999,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  child: const Text(
+                                                    'Annuler',
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Clore la session ?',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF092C4C), // primary
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'Êtes-vous sûr de vouloir clore la session ? Les étudiants n\'ayant pas marqué seront enregistrés comme absents.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF4F4F4F), // gray2
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Column(
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _showClosureModal = false;
-                                        _isClosed = true;
-                                        _timer.cancel();
-                                        _navigateToRecap();
-                                      });
-                                    },
-
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: error,
-                                      foregroundColor: Colors.white,
-                                      minimumSize: const Size(double.infinity, 56),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(9999),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Clore la session',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  OutlinedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _showClosureModal = false;
-                                      });
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      side: const BorderSide(color: gray5),
-                                      foregroundColor: gray2,
-                                      minimumSize: const Size(double.infinity, 56),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(9999),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Annuler',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
 
                         // Student List
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            children: const [
-                              _StudentListItem(
-                                name: 'Julien Dupont',
-                                initials: 'JD',
-                                status: 'Marqué à 10:16',
-                                badgeLabel: 'Présent',
-                                badgeColor: success,
-                                badgeBg: successDim,
-                                badgeIcon: Icons.check,
-                              ),
-                              _StudentListItem(
-                                name: 'Alice Leroy',
-                                initials: 'AL',
-                                status: 'Marqué à 10:27',
-                                badgeLabel: 'Retard',
-                                badgeColor: secondary,
-                                badgeBg: secondaryDim,
-                                badgeIcon: Icons.access_time,
-                              ),
-                              _StudentListItem(
-                                name: 'Marc Bernard',
-                                initials: 'MB',
-                                status: 'En attente...',
-                                badgeLabel: '...',
-                                badgeColor: gray3,
-                                badgeBg: gray5,
-                                isPending: true,
-                              ),
-                              _StudentListItem(
-                                name: 'Sophie Martin',
-                                initials: 'SM',
-                                status: 'En attente...',
-                                badgeLabel: '...',
-                                badgeColor: gray3,
-                                badgeBg: gray5,
-                                isPending: true,
-                              ),
-                            ],
-                          ),
+                          child: _isLoadingStudents
+                              ? const Center(child: CircularProgressIndicator())
+                              : Column(
+                                  children: _allStudents.map((student) {
+                                    final userData =
+                                        student['users']
+                                            as Map<String, dynamic>;
+                                    final studentId = userData['id'] as String;
+                                    final firstName =
+                                        userData['first_name'] as String;
+                                    final lastName =
+                                        userData['last_name'] as String;
+                                    final initials =
+                                        '${firstName[0]}${lastName[0]}';
+
+                                    final presence = _presences.firstWhere(
+                                      (p) => p['student_id'] == studentId,
+                                      orElse: () => {},
+                                    );
+
+                                    final bool hasMarked = presence.isNotEmpty;
+                                    final Color bColor = hasMarked
+                                        ? success
+                                        : gray3;
+                                    final Color bBg = hasMarked
+                                        ? successDim
+                                        : gray5;
+
+                                    return _StudentListItem(
+                                      name: '$firstName $lastName',
+                                      initials: initials,
+                                      status: hasMarked
+                                          ? 'Marqué'
+                                          : 'En attente...',
+                                      badgeLabel: hasMarked ? 'Présent' : '...',
+                                      badgeColor: bColor,
+                                      badgeBg: bBg,
+                                      badgeIcon: hasMarked ? Icons.check : null,
+                                      isPending: !hasMarked,
+                                    );
+                                  }).toList(),
+                                ),
                         ),
                       ],
                     ),
@@ -463,8 +584,8 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    bg.withOpacity(0),
-                    bg.withOpacity(1),
+                    bg.withValues(alpha: 0),
+                    bg.withValues(alpha: 1),
                     bg,
                   ],
                   stops: const [0, 0.4, 1],
@@ -485,14 +606,11 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                     borderRadius: BorderRadius.circular(9999),
                   ),
                   elevation: 8,
-                  shadowColor: error.withOpacity(0.4),
+                  shadowColor: error.withValues(alpha: 0.4),
                 ),
                 child: const Text(
                   'Enregistrer mon départ',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
               ),
             ),
@@ -510,10 +628,14 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.lock_outline, color: Colors.white, size: 40),
+                      child: const Icon(
+                        Icons.lock_outline,
+                        color: Colors.white,
+                        size: 40,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     const Text(
@@ -552,10 +674,7 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
                         const SizedBox(width: 12),
                         const Text(
                           'Redirection...',
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.white60, fontSize: 14),
                         ),
                       ],
                     ),

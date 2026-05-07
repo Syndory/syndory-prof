@@ -13,6 +13,7 @@ class SessionRecapScreen extends StatefulWidget {
 
 class _SessionRecapScreenState extends State<SessionRecapScreen> {
   bool _isLoading = true;
+  // ignore: unused_field
   String _searchQuery = '';
   String _activeFilter = 'Tous';
 
@@ -35,18 +36,7 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF092C4C);
-    const Color primaryDim = Color(0xFFE8EFF5);
-    const Color secondary = Color(0xFFF2994A);
-    const Color secondaryDim = Color(0xFFFEF3E7);
-    const Color success = Color(0xFF27AE60);
-    const Color successDim = Color(0xFFE8F8EF);
-    const Color error = Color(0xFFEB5757);
-    const Color errorDim = Color(0xFFFEECEC);
     const Color bg = Color(0xFFF5F7FA);
-    const Color gray1 = Color(0xFF333333);
-    const Color gray2 = Color(0xFF4F4F4F);
-    const Color gray3 = Color(0xFF828282);
-    const Color gray5 = Color(0xFFE0E0E0);
 
     return Scaffold(
       backgroundColor: bg,
@@ -57,7 +47,10 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -107,8 +100,8 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      bg.withOpacity(0),
-                      bg.withOpacity(1),
+                      bg.withValues(alpha: 0),
+                      bg.withValues(alpha: 1),
                       bg,
                     ],
                     stops: const [0, 0.4, 1],
@@ -127,14 +120,11 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
                       borderRadius: BorderRadius.circular(9999),
                     ),
                     elevation: 8,
-                    shadowColor: primary.withOpacity(0.4),
+                    shadowColor: primary.withValues(alpha: 0.4),
                   ),
                   child: const Text(
                     'Valider et fermer',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -158,7 +148,10 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
             childAspectRatio: 2,
-            children: List.generate(4, (_) => _SkeletonBox(height: 80, borderRadius: 12)),
+            children: List.generate(
+              4,
+              (_) => _SkeletonBox(height: 80, borderRadius: 12),
+            ),
           ),
           const SizedBox(height: 24),
           _SkeletonBox(height: 48, borderRadius: 99),
@@ -172,10 +165,13 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
           ),
           const SizedBox(height: 24),
           Column(
-            children: List.generate(3, (_) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _SkeletonBox(height: 64, borderRadius: 12),
-            )),
+            children: List.generate(
+              3,
+              (_) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _SkeletonBox(height: 64, borderRadius: 12),
+              ),
+            ),
           ),
         ],
       ),
@@ -183,8 +179,6 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
   }
 
   Widget _buildContent() {
-    final Color primary = const Color(0xFF092C4C);
-    final Color gray3 = const Color(0xFF828282);
     final Color successDim = const Color(0xFFE8F8EF);
     final Color success = const Color(0xFF27AE60);
     final Color secondaryDim = const Color(0xFFFEF3E7);
@@ -233,7 +227,10 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
                 const SizedBox(height: 4),
                 Text(
                   '${widget.classInfo.filiere} • Filière A',
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF4F4F4F)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF4F4F4F),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -259,9 +256,24 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
             childAspectRatio: 2.2,
             children: [
               _StatBox(value: '42', label: 'Inscrits'),
-              _StatBox(value: '28', label: 'Présents', color: success, bg: successDim),
-              _StatBox(value: '12', label: 'Absents', color: error, bg: errorDim),
-              _StatBox(value: '2', label: 'Retard', color: secondary, bg: secondaryDim),
+              _StatBox(
+                value: '28',
+                label: 'Présents',
+                color: success,
+                bg: successDim,
+              ),
+              _StatBox(
+                value: '12',
+                label: 'Absents',
+                color: error,
+                bg: errorDim,
+              ),
+              _StatBox(
+                value: '2',
+                label: 'Retard',
+                color: secondary,
+                bg: secondaryDim,
+              ),
             ],
           ),
 
@@ -309,7 +321,11 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.people_outline, color: Color(0xFF828282), size: 32),
+              child: const Icon(
+                Icons.people_outline,
+                color: Color(0xFF828282),
+                size: 32,
+              ),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -411,13 +427,15 @@ class _StatBox extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg ?? Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: bg == null ? const [
-          BoxShadow(
-            color: Color(0x0F092C4C),
-            offset: Offset(0, 4),
-            blurRadius: 16,
-          ),
-        ] : null,
+        boxShadow: bg == null
+            ? const [
+                BoxShadow(
+                  color: Color(0x0F092C4C),
+                  offset: Offset(0, 4),
+                  blurRadius: 16,
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -501,11 +519,16 @@ class _Filters extends StatelessWidget {
             child: GestureDetector(
               onTap: () => onFilterChanged(f),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: isActive ? const Color(0xFF092C4C) : Colors.white,
                   border: Border.all(
-                    color: isActive ? const Color(0xFF092C4C) : const Color(0xFFE0E0E0),
+                    color: isActive
+                        ? const Color(0xFF092C4C)
+                        : const Color(0xFFE0E0E0),
                   ),
                   borderRadius: BorderRadius.circular(9999),
                 ),
@@ -603,7 +626,11 @@ class _StudentItem extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 4),
-                Icon(Icons.keyboard_arrow_down, size: 12, color: Color(0xFF27AE60)),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 12,
+                  color: Color(0xFF27AE60),
+                ),
               ],
             ),
           ),
@@ -618,7 +645,11 @@ class _SkeletonBox extends StatelessWidget {
   final double? width;
   final double borderRadius;
 
-  const _SkeletonBox({required this.height, this.width, required this.borderRadius});
+  const _SkeletonBox({
+    required this.height,
+    this.width,
+    required this.borderRadius,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -626,7 +657,7 @@ class _SkeletonBox extends StatelessWidget {
       height: height,
       width: width ?? double.infinity,
       decoration: BoxDecoration(
-        color: const Color(0xFFE0E0E0).withOpacity(0.5),
+        color: const Color(0xFFE0E0E0).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );

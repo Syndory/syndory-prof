@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../app/theme/app_theme.dart';
 import '../../data/supabase/supabase_client.dart';
 import '../../app/navigation/main_shell.dart';
-import 'auth_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -122,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.primaryDim.withOpacity(0.4),
+                    AppTheme.primaryDim.withValues(alpha: 0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -139,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppTheme.secondaryDim.withOpacity(0.3),
+                    AppTheme.secondaryDim.withValues(alpha: 0.3),
                     Colors.transparent,
                   ],
                 ),
@@ -215,7 +214,7 @@ class _HeroSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primary.withOpacity(0.25),
+                    color: AppTheme.primary.withValues(alpha: 0.25),
                     blurRadius: 32,
                     offset: const Offset(0, 12),
                   ),
@@ -272,7 +271,7 @@ class _LoginCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.85),
+            color: Colors.white.withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
           ),
@@ -325,7 +324,7 @@ class _LoginCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppTheme.errorDim,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.error.withOpacity(0.2)),
+                    border: Border.all(color: AppTheme.error.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [

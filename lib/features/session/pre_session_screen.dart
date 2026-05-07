@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
+import '../../data/models/seance_model.dart';
+import '../../data/repositories/classes_repository.dart';
+import '../../data/repositories/session_repository.dart';
+import '../../data/supabase/supabase_client.dart';
 import '../classes/models/models.dart';
 import '../classes/effectifs_screen.dart';
 import 'active_session_screen.dart';
+import '../notifications/notifications_screen.dart';
 
 
 class PreSessionScreen extends StatefulWidget {
   final ClassModel classInfo;
+  final SeanceModel? seance;
 
-  const PreSessionScreen({super.key, required this.classInfo});
+  const PreSessionScreen({
+    super.key,
+    required this.classInfo,
+    this.seance,
+  });
 
   @override
   State<PreSessionScreen> createState() => _PreSessionScreenState();
@@ -15,7 +25,94 @@ class PreSessionScreen extends StatefulWidget {
 
 class _PreSessionScreenState extends State<PreSessionScreen> {
   int _markingWindow = 10; // minutes
-  bool isSessionAlreadyOpen = false; // Simulated state
+  bool isSessionAlreadyOpen = false;
+  String? _existingSessionId;
+  bool _isLoading = true;
+  SeanceModel? _currentSeance;
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    if (widget.seance != null) {
+      _currentSeance = widget.seance;
+      await _checkExistingSession();
+    } else {
+      await _loadSession();
+    }
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _loadSession() async {
+    try {
+      final data = await ClassesRepository.getNextSessionForClass(widget.classInfo.id);
+      if (data != null && mounted) {
+        setState(() {
+          _currentSeance = SeanceModel.fromJson(data);
+        });
+        await _checkExistingSession();
+      }
+    } catch (e) {
+      debugPrint('Error loading session: $e');
+    }
+  }
+
+  Future<void> _checkExistingSession() async {
+    if (_currentSeance == null) return;
+    try {
+      final response = await SupabaseClientProvider.client
+          .from('sessions')
+          .select('id, opened_at, closed_at')
+          .eq('seance_id', _currentSeance!.id)
+          .isFilter('closed_at', null)
+          .maybeSingle();
+
+      if (response != null && mounted) {
+        setState(() {
+          isSessionAlreadyOpen = true;
+          _existingSessionId = response['id'] as String;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error checking session: $e');
+    }
+  }
+
+  Future<void> _handleOpenSession() async {
+    if (_currentSeance == null) return;
+    setState(() => _isLoading = true);
+    try {
+      final result = await SessionRepository.openSession(
+        seanceId: _currentSeance!.id,
+        lat: 0.0, // Mock lat
+        lng: 0.0, // Mock lng
+        markingWindowDuration: _markingWindow,
+      );
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ActiveSessionScreen(
+            classInfo: widget.classInfo,
+            initialTimerMinutes: _markingWindow,
+            sessionId: result['session_id'] as String,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
 
   void _incrementWindow() {
@@ -62,7 +159,7 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    primaryDim.withOpacity(0.8),
+                    primaryDim.withValues(alpha: 0.8),
                     Colors.transparent,
                   ],
                 ),
@@ -103,7 +200,12 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                       ),
                       _CircularButton(
                         icon: Icons.notifications_none,
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                          );
+                        },
                         iconColor: gray2,
                       ),
                     ],
@@ -135,24 +237,24 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                                 icon: Icons.book_outlined,
                                 iconBg: primaryDim,
                                 iconColor: primary,
-                                title: 'Cours Magistral',
-                                subtitle: '${widget.classInfo.filiere} • Filière A',
+                                title: _currentSeance?.matiereName ?? 'Matière inconnue',
+                                subtitle: '${widget.classInfo.filiere} • ${_currentSeance?.className ?? widget.classInfo.title}',
                               ),
                               const _Divider(),
-                              const _DetailRow(
+                              _DetailRow(
                                 icon: Icons.location_on_outlined,
                                 iconBg: secondaryDim,
                                 iconColor: secondary,
-                                title: 'Amphi B204',
-                                subtitle: 'Bâtiment Sciences',
+                                title: _currentSeance?.salleName ?? 'Salle non définie',
+                                subtitle: 'Campus Syndory',
                               ),
                               const _Divider(),
-                              const _DetailRow(
+                              _DetailRow(
                                 icon: Icons.access_time,
                                 iconBg: infoDim,
                                 iconColor: info,
-                                title: '10:15 — 12:15',
-                                subtitle: 'Mardi 28 Avril 2026',
+                                title: _currentSeance != null ? '${_currentSeance!.startTime} — ${_currentSeance!.endTime}' : '--:-- — --:--',
+                                subtitle: 'Aujourd\'hui',
                               ),
                               const _Divider(),
                               GestureDetector(
@@ -292,7 +394,7 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                                             'Position validée à l\'instant',
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: success.withOpacity(0.8),
+                                              color: success.withValues(alpha: 0.8),
                                             ),
                                           ),
                                         ],
@@ -395,8 +497,8 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    bg.withOpacity(0),
-                    bg.withOpacity(1),
+                    bg.withValues(alpha: 0),
+                    bg.withValues(alpha: 1),
                     bg,
                   ],
                   stops: const [0, 0.4, 1],
@@ -405,28 +507,7 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
               child: Column(
                 children: [
                   ElevatedButton(
-                    onPressed: isSessionAlreadyOpen ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ActiveSessionScreen(
-                            classInfo: widget.classInfo,
-                            initialTimerMinutes: _markingWindow,
-                          ),
-                        ),
-                      );
-                    } : () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ActiveSessionScreen(
-                            classInfo: widget.classInfo,
-                            initialTimerMinutes: _markingWindow,
-                          ),
-                        ),
-                      );
-                    },
-
+                    onPressed: (_isLoading || isSessionAlreadyOpen) ? null : _handleOpenSession,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isSessionAlreadyOpen ? gray5 : primary,
                       foregroundColor: isSessionAlreadyOpen ? gray3 : Colors.white,
@@ -434,30 +515,35 @@ class _PreSessionScreenState extends State<PreSessionScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(9999),
                       ),
-                      elevation: isSessionAlreadyOpen ? 0 : 8,
-                      shadowColor: primary.withOpacity(0.4),
+                      elevation: (isSessionAlreadyOpen || _isLoading) ? 0 : 8,
+                      shadowColor: primary.withValues(alpha: 0.4),
                     ),
-                    child: const Text(
-                      'Ouvrir la session',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    child: _isLoading 
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Ouvrir la session',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                   ),
                   if (isSessionAlreadyOpen) ...[
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ActiveSessionScreen(
-                              classInfo: widget.classInfo,
-                              initialTimerMinutes: _markingWindow,
+                        if (_existingSessionId != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ActiveSessionScreen(
+                                classInfo: widget.classInfo,
+                                initialTimerMinutes: _markingWindow,
+                                sessionId: _existingSessionId!,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        }
                       },
 
                       style: OutlinedButton.styleFrom(

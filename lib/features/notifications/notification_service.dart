@@ -101,15 +101,13 @@ class NotificationService {
           .order('created_at', ascending: false)
           .limit(50);
 
-      if (result is List) {
-        final parsed = result
-            .cast<Map<String, dynamic>>()
-            .map(AppNotification.fromMap)
-            .toList();
+      final parsed = (result as List)
+          .cast<Map<String, dynamic>>()
+          .map(AppNotification.fromMap)
+          .toList();
 
-        notifications.value = parsed;
-        _updateUnreadCount();
-      }
+      notifications.value = parsed;
+      _updateUnreadCount();
     } catch (e) {
       debugPrint('Error loading notifications: $e');
     }

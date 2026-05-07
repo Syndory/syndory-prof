@@ -13,6 +13,7 @@ class StudentModel {
 }
 
 class ClassModel {
+  final String id;
   final String title;
   final String filiere;
   final List<String> subjects;
@@ -21,6 +22,7 @@ class ClassModel {
   final List<StudentModel> students;
 
   const ClassModel({
+    required this.id,
     required this.title,
     required this.filiere,
     required this.subjects,

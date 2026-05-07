@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/env/app_env.dart';
 import 'app/app_bootstrap.dart';
@@ -7,9 +8,9 @@ import 'data/supabase/supabase_client.dart';
 
 // Dev auto-login flags — injected at compile time via --dart-define.
 // Never active in release builds.
-const bool _devAutoLogin = bool.fromEnvironment('DEV_AUTO_LOGIN');
-const String _devEmail = String.fromEnvironment('DEV_LOGIN_EMAIL');
-const String _devPassword = String.fromEnvironment('DEV_LOGIN_PASSWORD');
+const bool _devAutoLogin = bool.fromEnvironment('DEV_AUTO_LOGIN', defaultValue: false);
+const String _devEmail = String.fromEnvironment('DEV_LOGIN_EMAIL', defaultValue: 'prof1@syndory.com');
+const String _devPassword = String.fromEnvironment('DEV_LOGIN_PASSWORD', defaultValue: 'prof123');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,5 +40,5 @@ Future<void> main() async {
     }
   }
 
-  runApp(const AppBootstrap());
+  runApp(const ProviderScope(child: AppBootstrap()));
 }

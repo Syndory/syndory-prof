@@ -5,6 +5,7 @@ import '../widgets/justification_card.dart';
 import '../widgets/justification_skeleton.dart';
 import '../widgets/justification_states.dart';
 import 'justification_detail_page.dart';
+import '../../../notifications/notifications_screen.dart';
 
 class JustificationListPage extends StatefulWidget {
   const JustificationListPage({super.key});
@@ -64,9 +65,22 @@ class _JustificationListPageState extends State<JustificationListPage>
               letterSpacing: -0.5,
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF092C4C)),
-            onPressed: () => _controller.load(),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded, color: Color(0xFF092C4C)),
+                onPressed: () => _controller.load(),
+              ),
+              IconButton(
+                icon: const Icon(Icons.notifications_none, color: Color(0xFF092C4C)),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => NotificationsScreen()),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),

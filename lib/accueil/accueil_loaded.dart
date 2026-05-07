@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../data/models/seance_model.dart';
+import '../features/session/pre_session_screen.dart';
+import '../features/classes/models/models.dart';
+import '../features/notifications/notifications_screen.dart';
 
 // ─── Modèles ───────────────────────────────────────────────────────────────
 
@@ -18,35 +22,16 @@ extension SeanceStatusX on SeanceStatus {
       };
 }
 
-class SeanceItem {
-  final String id;
-  final String matiereName;
-  final String className;
-  final String? salleName;
-  final DateTime date;
-  final String startTime;
-  final String endTime;
-  final bool isExam;
-
-  const SeanceItem({
-    required this.id,
-    required this.matiereName,
-    required this.className,
-    this.salleName,
-    required this.date,
-    required this.startTime,
-    required this.endTime,
-    required this.isExam,
-  });
-
+extension SeanceModelX on SeanceModel {
   SeanceStatus get status {
     final now = DateTime.now();
+    final d = date ?? now;
     final sp = startTime.split(':');
     final ep = endTime.split(':');
     final start = DateTime(
-        date.year, date.month, date.day, int.parse(sp[0]), int.parse(sp[1]));
+        d.year, d.month, d.day, int.parse(sp[0]), int.parse(sp[1]));
     final end = DateTime(
-        date.year, date.month, date.day, int.parse(ep[0]), int.parse(ep[1]));
+        d.year, d.month, d.day, int.parse(ep[0]), int.parse(ep[1]));
     if (now.isBefore(start)) return SeanceStatus.aVenir;
     if (now.isAfter(end)) return SeanceStatus.termine;
     return SeanceStatus.enCours;
@@ -54,25 +39,6 @@ class SeanceItem {
 
   String get location =>
       salleName != null ? '$className • $salleName' : className;
-
-  factory SeanceItem.fromJson(Map<String, dynamic> json) {
-    final s = json['start_time'] as String;
-    final e = json['end_time'] as String;
-    return SeanceItem(
-      id: json['id'] as String,
-      date: DateTime.parse(json['date'] as String),
-      startTime: s.length >= 5 ? s.substring(0, 5) : s,
-      endTime: e.length >= 5 ? e.substring(0, 5) : e,
-      matiereName:
-          (json['matieres'] as Map<String, dynamic>)['name'] as String,
-      className:
-          (json['classes'] as Map<String, dynamic>)['name'] as String,
-      salleName: json['salles'] != null
-          ? (json['salles'] as Map<String, dynamic>)['name'] as String?
-          : null,
-      isExam: json['is_exam'] as bool? ?? false,
-    );
-  }
 }
 
 class ClasseData {
@@ -91,7 +57,7 @@ class AccueilLoadedData {
   final String firstName;
   final String lastName;
   final int pendingJustificatifs;
-  final List<SeanceItem> todaySeances;
+  final List<SeanceModel> todaySeances;
   final List<ClasseData> classes;
 
   const AccueilLoadedData({
@@ -152,7 +118,7 @@ class AccueilLoadedPage extends StatelessWidget {
       onRefresh: () async => onRefresh(),
       child: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: _buildHeader()),
+          SliverToBoxAdapter(child: _buildHeader(context)),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             sliver: SliverToBoxAdapter(child: _buildTodaySection()),
@@ -168,7 +134,7 @@ class AccueilLoadedPage extends StatelessWidget {
   }
 
   // ── Header ────────────────────────────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: Row(
@@ -209,50 +175,58 @@ class AccueilLoadedPage extends StatelessWidget {
               ],
             ),
           ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => NotificationsScreen()),
+              );
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.notifications_outlined,
+                    size: 20,
+                    color: Color(0xFF1A1A2E),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  size: 20,
-                  color: Color(0xFF1A1A2E),
-                ),
-              ),
-              if (data.pendingJustificatifs > 0)
-                Positioned(
-                  top: -2,
-                  right: -2,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: _kOrange,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '${data.pendingJustificatifs}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                if (data.pendingJustificatifs > 0)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: _kOrange,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${data.pendingJustificatifs}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -340,99 +314,119 @@ class AccueilLoadedPage extends StatelessWidget {
 class _SeanceCard extends StatelessWidget {
   const _SeanceCard({required this.seance});
 
-  final SeanceItem seance;
+  final SeanceModel seance;
 
   @override
   Widget build(BuildContext context) {
     final s = seance.status;
     final isEnCours = s == SeanceStatus.enCours;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        // Bordure verte complète pour EN COURS, sinon ombre légère
-        border: isEnCours
-            ? Border.all(color: _kGreen, width: 1.5)
-            : null,
-        boxShadow: isEnCours
-            ? null
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Colonne heure gauche
-          SizedBox(
-            width: 48,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  seance.startTime,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A2E),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  seance.endTime,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF9CA3AF),
-                  ),
-                ),
-              ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PreSessionScreen(
+              classInfo: ClassModel(
+                id: seance.classId ?? '',
+                title: seance.className,
+                filiere: 'Filière A', // Mock for now if not in seance
+                studentCount: 0,
+                attendanceRate: 0,
+                subjects: [seance.matiereName],
+                students: [],
+              ),
+              seance: seance,
             ),
           ),
-          const SizedBox(width: 12),
-          // Contenu droite
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        seance.matiereName,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A2E),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          // Bordure verte complète pour EN COURS, sinon ombre légère
+          border: isEnCours ? Border.all(color: _kGreen, width: 1.5) : null,
+          boxShadow: isEnCours
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Colonne heure gauche
+            SizedBox(
+              width: 48,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    seance.startTime,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A2E),
                     ),
-                    const SizedBox(width: 8),
-                    _StatusBadge(status: s),
-                    if (seance.isExam) ...[
-                      const SizedBox(width: 6),
-                      const _ExamBadge(),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  seance.location,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF6B7280),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    seance.endTime,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            // Contenu droite
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          seance.matiereName,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A2E),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _StatusBadge(status: s),
+                      if (seance.isExam) ...[
+                        const SizedBox(width: 6),
+                        const _ExamBadge(),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    seance.location,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

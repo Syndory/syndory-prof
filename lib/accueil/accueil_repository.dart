@@ -14,7 +14,7 @@ class AccueilRepository {
       client
           .from('seances')
           .select(
-            'id, start_time, end_time, is_exam, matieres(name), classes(name), salles(name)',
+            'id, class_id, start_time, end_time, is_exam, matieres(name), classes(name), salles(name)',
           )
           .eq('professor_id', user.id)
           .eq('date', today)

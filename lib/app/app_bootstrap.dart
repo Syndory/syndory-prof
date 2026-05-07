@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
 
+import 'env/app_env.dart';
+import 'errors/missing_supabase_config_screen.dart';
 import '../features/auth/auth_routes.dart';
-import '../features/auth/placeholder.dart';
-
-import '../app/navigation/main_shell.dart';
-import '../features/justifications/justification_list_page.dart';
-
-// Flag DEV pour preview des justificatifs
-const bool _devJustifPreview = bool.fromEnvironment('DEV_JUSTIF_PREVIEW');
+import '../features/auth/auth_gate.dart';
 
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});
@@ -20,9 +16,9 @@ class AppBootstrap extends StatelessWidget {
       theme: AppTheme.light,
       onGenerateRoute: AuthRoutes.onGenerateRoute,
       builder: (context, child) => child ?? const SizedBox.shrink(),
-      home: _devJustifPreview
-          ? const JustificationListPage()
-          : const AuthGate(),
+      home: AppEnv.hasSupabaseConfig
+          ? const AuthGate()
+          : const MissingSupabaseConfigScreen(),
     );
   }
 }

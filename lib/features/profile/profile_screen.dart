@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syndory_prof/data/supabase/supabase_client.dart';
-import '../auth/placeholder.dart';
+import '../auth/auth_gate.dart';
 import '../notifications/notifications_screen.dart';
 
 enum ProfileUiState {
@@ -242,8 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _phoneController.text = _formatBeninPhone(_preview.phone);
       setState(() => _state = ProfileUiState.loaded);
     } catch (e) {
-      // Silencieux en dev, on revient à l'écran chargé et on log l'erreur.
-      // Vous pouvez consulter DebugHealthScreen pour plus d'infos.
+      debugPrint('[ProfileScreen] Error loading profile: $e');
       if (!mounted) {
         return;
       }

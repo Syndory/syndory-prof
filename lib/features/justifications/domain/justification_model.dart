@@ -86,7 +86,7 @@ class Justification {
       reason: json['reason'],
       rejectionReason: json['rejection_reason'],
       imageUrl: json['file_url'],
-      status: JustificationStatus.fromString(json['statut'] ?? 'en attente'),
+      status: JustificationStatus.fromString(json['status'] ?? 'pending'),
       createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
     );
   }

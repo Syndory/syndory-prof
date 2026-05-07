@@ -1,5 +1,24 @@
 # Syndory — Application Professeur (Flutter)
 
+## 🚀 Status : Production-Ready
+
+**Dernière mise à jour** : 7 mai 2026  
+**Version** : 1.0-beta (Post-refactor)
+
+✅ **flutter analyze** : 0 issues  
+✅ **Configuration Supabase** : Stricte (env vars only)  
+✅ **Mocks supprimés** : Oui  
+✅ **API Deprecations** : Corrigées  
+✅ **Auth Flow** : Complet + role validation
+
+Pour les détails complets, voir :
+
+- [PROD_READINESS_REPORT.md](PROD_READINESS_REPORT.md) — Rapport d'état
+- [PRE_RELEASE_CHECKLIST.md](PRE_RELEASE_CHECKLIST.md) — Checklist avant release
+- [ARCHITECTURE.md](ARCHITECTURE.md) — Guide architecture + dev
+
+---
+
 ## Architecture du repository
 
 ```

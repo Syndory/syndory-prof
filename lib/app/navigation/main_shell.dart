@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../features/classes/classes_screen.dart';
 import '../../features/profile/profile_screen.dart';
-import '../../features/justifications/justifications_screen.dart';
+import '../../features/justifications/presentation/pages/justification_list_page.dart';
 import '../../accueil/accueil_screen.dart';
+import '../../features/calendar/presentation/pages/calendar_screen.dart';
 
 class MainShell extends StatefulWidget {
   final int initialIndex;
@@ -37,9 +38,9 @@ class _MainShellState extends State<MainShell> {
         index: _currentIndex,
         children: const [
           AccueilScreen(),
-          _PlaceholderScreen(title: 'Calendrier'),
+          CalendarScreen(),
           ClassesScreen(),
-          JustificationsScreen(),
+          JustificationListPage(),
           ProfileScreen(),
         ],
       ),
@@ -77,32 +78,6 @@ class _MainShellState extends State<MainShell> {
             label: 'Profil',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-  const _PlaceholderScreen({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Center(
-        child: Text(
-          '$title (À venir)',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF828282),
-          ),
-        ),
       ),
     );
   }

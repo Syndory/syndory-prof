@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import '../../data/repositories/classes_repository.dart';
+import '../justifications/domain/justification_model.dart';
+import '../justifications/data/justification_repository.dart';
 import 'models/models.dart';
 import '../session/pre_session_screen.dart';
 import 'widgets/class_card.dart';
 
 import 'widgets/class_skeleton.dart';
 import 'widgets/state_box.dart';
+import '../notifications/notifications_screen.dart';
 
 enum ClassesUiState { loading, empty, error, loaded }
 
@@ -21,6 +24,7 @@ class ClassesScreen extends StatefulWidget {
 class _ClassesScreenState extends State<ClassesScreen> {
   ClassesUiState _state = ClassesUiState.loading;
   List<ClassModel> _classes = [];
+  int _pendingJustificationsCount = 0;
 
   @override
   void initState() {
@@ -34,18 +38,29 @@ class _ClassesScreenState extends State<ClassesScreen> {
     });
 
     try {
-      final rawClasses = await ClassesRepository.getProfessorClasses();
+      final results = await Future.wait([
+        ClassesRepository.getProfessorClasses(),
+        JustificationRepository().fetchAll(),
+      ]);
+      
+      final rawClasses = results[0] as List<Map<String, dynamic>>;
+      final allJustifs = results[1] as List<Justification>;
       
       if (mounted) {
         setState(() {
+          _pendingJustificationsCount = allJustifs
+              .where((j) => j.status == JustificationStatus.pending)
+              .length;
+
           _classes = rawClasses.map((item) {
             return ClassModel(
+              id: item['id'] as String,
               title: item['name'] as String,
               filiere: item['filiere_name'] as String,
               subjects: List<String>.from(item['subjects'] as List),
-              studentCount: 0, // TODO: Fetch real student count
-              attendanceRate: 0, // TODO: Fetch real attendance rate
-              students: [], // TODO: Fetch real students
+              studentCount: item['student_count'] as int? ?? 0,
+              attendanceRate: (item['attendance_rate'] as num?)?.toDouble() ?? 0.0,
+              students: [], // TODO: Fetch real students if needed for drill-down
             );
           }).toList();
           
@@ -171,7 +186,10 @@ class _ClassesScreenState extends State<ClassesScreen> {
                 color: Color(0xFF4F4F4F),
               ),
               onPressed: () {
-                // TODO: Handle notifications
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                );
               },
             ),
           ),
@@ -260,9 +278,9 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 ),
                               ],
                             ),
-                            child: const Text(
-                              '3',
-                              style: TextStyle(
+                            child: Text(
+                              '$_pendingJustificationsCount',
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 color: Colors.white,
