@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../features/classes/classes_screen.dart';
 import '../../features/profile/profile_screen.dart';
-import '../../features/justifications/presentation/pages/justification_list_page.dart';
 import '../../accueil/accueil_screen.dart';
 import '../../features/calendar/presentation/pages/calendar_screen.dart';
+import '../../shared/widgets/placeholder_screen.dart';
 
 class MainShell extends StatefulWidget {
   final int initialIndex;
 
-  const MainShell({super.key, this.initialIndex = 2}); // Default to "Mes cours"
+  const MainShell({super.key, this.initialIndex = 0});
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -40,7 +40,7 @@ class _MainShellState extends State<MainShell> {
           AccueilScreen(),
           CalendarScreen(),
           ClassesScreen(),
-          JustificationListPage(),
+          PlaceholderScreen(title: 'Ressources'),
           ProfileScreen(),
         ],
       ),
@@ -68,9 +68,9 @@ class _MainShellState extends State<MainShell> {
             label: 'Mes cours',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_outlined),
-            activeIcon: Icon(Icons.assignment),
-            label: 'Justificatifs',
+            icon: Icon(Icons.folder_outlined),
+            activeIcon: Icon(Icons.folder),
+            label: 'Ressources',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

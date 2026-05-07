@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:syndory_prof/data/supabase/supabase_client.dart';
@@ -515,47 +517,139 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showLogoutConfirm() {
     setState(() => _state = ProfileUiState.confirmLogout);
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Se déconnecter ?'),
-          content: const Text(
-            'Voulez-vous vraiment fermer votre session ? Vous devrez vous reconnecter pour accéder à vos cours.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() => _state = ProfileUiState.loaded);
-              },
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEB5757),
+      barrierDismissible: true,
+      barrierLabel: 'Fermer',
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Material(
+          type: MaterialType.transparency,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                  child: const SizedBox.expand(),
+                ),
               ),
-              onPressed: () async {
-                final navigator = Navigator.of(context);
-                // Ferme la dialog immédiatement
-                navigator.pop();
-                setState(() => _state = ProfileUiState.loaded);
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 360),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1A092C4C),
+                            blurRadius: 40,
+                            offset: Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Se déconnecter ?',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF092C4C),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Voulez-vous vraiment fermer votre session ? Vous devrez vous reconnecter pour accéder à vos cours.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              height: 1.5,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF4F4F4F),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFEB5757),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: const StadiumBorder(),
+                                elevation: 0,
+                              ),
+                              onPressed: () async {
+                                final navigator = Navigator.of(context);
+                                navigator.pop();
+                                setState(() => _state = ProfileUiState.loaded);
 
-                try {
-                  await SupabaseClientProvider.client.auth.signOut();
-                } catch (_) {}
+                                try {
+                                  await SupabaseClientProvider.client.auth
+                                      .signOut();
+                                } catch (_) {}
 
-                if (!mounted) return;
+                                if (!mounted) return;
 
-                // Redirige vers l'AuthGate (connexion officielle / placeholder)
-                navigator.pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const AuthGate()),
-                  (route) => false,
-                );
-              },
-              child: const Text('Déconnexion'),
-            ),
-          ],
+                                navigator.pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (_) => const AuthGate(),
+                                  ),
+                                  (route) => false,
+                                );
+                              },
+                              child: const Text(
+                                'Déconnexion',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextButton(
+                              style: TextButton.styleFrom(
+                                backgroundColor: const Color(0xFFE0E0E0),
+                                foregroundColor: const Color(0xFF4F4F4F),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: const StadiumBorder(),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                setState(() => _state = ProfileUiState.loaded);
+                              },
+                              child: const Text(
+                                'Annuler',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -1003,15 +1097,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: Color(0xFF4F4F4F),
             ),
             onPressed: _openNotifications,
-          ),
-          IconButton(
-            icon: Icon(
-              _state == ProfileUiState.loading
-                  ? Icons.hourglass_top
-                  : Icons.refresh,
-              color: const Color(0xFF4F4F4F),
-            ),
-            onPressed: _state == ProfileUiState.loading ? null : _loadProfile,
           ),
         ],
       ),
