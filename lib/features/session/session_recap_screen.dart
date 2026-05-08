@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../classes/models/models.dart';
 import '../../data/repositories/classes_repository.dart';
 import '../../data/repositories/session_repository.dart';
-import '../../data/models/student_model.dart';
 
 class SessionRecapScreen extends StatefulWidget {
   final ClassModel classInfo;
@@ -206,6 +205,8 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
         ],
       ),
     );
+  }
+
   Widget _buildContent() {
     final Color successDim = const Color(0xFFE8F8EF);
     final Color success = const Color(0xFF27AE60);

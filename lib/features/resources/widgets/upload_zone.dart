@@ -28,7 +28,7 @@ class _UploadZoneState extends State<UploadZone> {
     if (resultat != null) {
       PlatformFile file = resultat.files.first;
 
-      // Vérification de l'extension 
+      // Vérification de l'extension
       if (!_allowedExtensions.contains(file.extension?.toLowerCase())) {
         setState(() {
           _errorMessage =
@@ -58,7 +58,7 @@ class _UploadZoneState extends State<UploadZone> {
   @override
   Widget build(BuildContext context) {
     bool hasError = _errorMessage != null;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -68,22 +68,32 @@ class _UploadZoneState extends State<UploadZone> {
             width: double.infinity,
             height: 150,
             decoration: BoxDecoration(
-              color: hasError 
-                  ? Colors.red.withOpacity(0.02) 
-                  : (_fileName != null ? Colors.blue.withOpacity(0.05) : Colors.grey[50]),
+              color: hasError
+                  ? Colors.red.withOpacity(0.02)
+                  : (_fileName != null
+                        ? Colors.blue.withOpacity(0.05)
+                        : Colors.grey[50]),
               borderRadius: BorderRadius.circular(12),
               // Bordure rouge pointillée en cas d'erreur
               border: Border.all(
-                color: hasError ? Colors.red : (_fileName != null ? AppTheme.primaryBlue : Colors.grey.shade300),
+                color: hasError
+                    ? Colors.red
+                    : (_fileName != null
+                          ? AppTheme.primaryBlue
+                          : Colors.grey.shade300),
                 width: 2,
-                style: BorderStyle.solid, 
+                style: BorderStyle.solid,
               ),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  hasError ? Icons.error_outline : (_fileName != null ? Icons.insert_drive_file : Icons.cloud_upload_outlined),
+                  hasError
+                      ? Icons.error_outline
+                      : (_fileName != null
+                            ? Icons.insert_drive_file
+                            : Icons.cloud_upload_outlined),
                   size: 42,
                   color: hasError ? Colors.red : AppTheme.primaryBlue,
                 ),
@@ -98,25 +108,34 @@ class _UploadZoneState extends State<UploadZone> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _fileName != null ? "Cliquez pour modifier" : "PDF, DOCX, PPTX, JPG, PNG (Max 20 Mo)",
+                  _fileName != null
+                      ? "Cliquez pour modifier"
+                      : "PDF, DOCX, PPTX, JPG, PNG (Max 20 Mo)",
                   style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 if (_fileName != null)
                   TextButton(
                     onPressed: () => setState(() => _fileName = null),
-                    child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
+                    child: const Text(
+                      "Supprimer",
+                      style: TextStyle(color: Colors.red),
+                    ),
                   ),
               ],
             ),
           ),
         ),
-        //  Affichage du message d'erreur sous la zone 
+        //  Affichage du message d'erreur sous la zone
         if (hasError)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               _errorMessage!,
-              style: const TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: Colors.red,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
       ],

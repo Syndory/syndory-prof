@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:syndory_prof/features/auth/auth_gate.dart';
 import 'theme/app_theme.dart';
 
 import 'env/app_env.dart';
 import 'errors/missing_supabase_config_screen.dart';
 import '../features/auth/auth_routes.dart';
-import '../features/auth/placeholder.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/resources/screens/resources_screen.dart';
 
-
 const bool _devProfilePreview = bool.fromEnvironment('DEV_PROFILE_PREVIEW');
 
-
-const bool _devResourcesPreview =
-    bool.fromEnvironment('DEV_RESOURCES_PREVIEW');
+const bool _devResourcesPreview = bool.fromEnvironment('DEV_RESOURCES_PREVIEW');
 
 class AppBootstrap extends StatelessWidget {
   const AppBootstrap({super.key});
@@ -35,7 +32,6 @@ class AppBootstrap extends StatelessWidget {
       theme: AppTheme.light,
       onGenerateRoute: AuthRoutes.onGenerateRoute,
       builder: (context, child) => child ?? const SizedBox.shrink(),
-      onGenerateRoute: AuthRoutes.onGenerateRoute,
       home: home,
     );
   }
