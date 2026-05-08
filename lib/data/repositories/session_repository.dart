@@ -41,4 +41,21 @@ class SessionRepository {
       throw Exception(errorData['error'] ?? 'Erreur lors de la clôture de la session');
     }
   }
+
+  static Future<List<Map<String, dynamic>>> getSessionPresences(String sessionId) async {
+    final response = await SupabaseClientProvider.client
+        .from('presences')
+        .select('student_id, status, created_at')
+        .eq('session_id', sessionId);
+    return (response as List).cast<Map<String, dynamic>>();
+  }
+
+  static Future<Map<String, dynamic>?> getSessionDetails(String sessionId) async {
+    final response = await SupabaseClientProvider.client
+        .from('sessions')
+        .select('*, seances(*, matieres(name), classes(name), salles(name))')
+        .eq('id', sessionId)
+        .maybeSingle();
+    return response;
+  }
 }
