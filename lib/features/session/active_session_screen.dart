@@ -136,8 +136,10 @@ class _ActiveSessionScreenState extends State<ActiveSessionScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                SessionRecapScreen(classInfo: widget.classInfo),
+            builder: (context) => SessionRecapScreen(
+              classInfo: widget.classInfo,
+              sessionId: widget.sessionId,
+            ),
           ),
         );
       }

@@ -1,11 +1,18 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import '../classes/models/models.dart';
+import '../../data/repositories/classes_repository.dart';
+import '../../data/repositories/session_repository.dart';
+import '../../data/models/student_model.dart';
 
 class SessionRecapScreen extends StatefulWidget {
   final ClassModel classInfo;
+  final String? sessionId;
 
-  const SessionRecapScreen({super.key, required this.classInfo});
+  const SessionRecapScreen({
+    super.key,
+    required this.classInfo,
+    this.sessionId,
+  });
 
   @override
   State<SessionRecapScreen> createState() => _SessionRecapScreenState();
@@ -13,24 +20,47 @@ class SessionRecapScreen extends StatefulWidget {
 
 class _SessionRecapScreenState extends State<SessionRecapScreen> {
   bool _isLoading = true;
-  // ignore: unused_field
   String _searchQuery = '';
   String _activeFilter = 'Tous';
+  
+  List<Map<String, dynamic>> _students = [];
+  List<Map<String, dynamic>> _presences = [];
+  Map<String, dynamic>? _sessionDetails;
 
   @override
   void initState() {
     super.initState();
-    _simulateLoading();
+    _fetchRecapData();
   }
 
-  void _simulateLoading() {
-    Timer(const Duration(seconds: 3), () {
+  Future<void> _fetchRecapData() async {
+    try {
+      // 1. Fetch class students
+      final studentsData = await ClassesRepository.getStudentsForClass(widget.classInfo.id);
+      
+      // 2. Fetch session details and presences if sessionId is provided
+      if (widget.sessionId != null) {
+        final details = await SessionRepository.getSessionDetails(widget.sessionId!);
+        final presences = await SessionRepository.getSessionPresences(widget.sessionId!);
+        
+        if (mounted) {
+          setState(() {
+            _sessionDetails = details;
+            _presences = presences;
+          });
+        }
+      }
+
       if (mounted) {
         setState(() {
+          _students = studentsData;
           _isLoading = false;
         });
       }
-    });
+    } catch (e) {
+      debugPrint('[Recap] Error fetching data: $e');
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -176,8 +206,6 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
         ],
       ),
     );
-  }
-
   Widget _buildContent() {
     final Color successDim = const Color(0xFFE8F8EF);
     final Color success = const Color(0xFF27AE60);
@@ -186,7 +214,40 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
     final Color errorDim = const Color(0xFFFEECEC);
     final Color error = const Color(0xFFEB5757);
 
-    if (widget.classInfo.students.isEmpty) {
+    final seance = _sessionDetails?['seances'];
+    final matiereName = seance?['matieres']?['name'] ?? (widget.classInfo.subjects.isNotEmpty ? widget.classInfo.subjects.first : 'Matière');
+    final startTime = seance?['start_time']?.toString().substring(0, 5) ?? '--:--';
+    final endTime = seance?['end_time']?.toString().substring(0, 5) ?? '--:--';
+    
+    // Stats
+    final totalInscrits = _students.length;
+    final presentCount = _presences.where((p) => p['status'] == 'present').length;
+    final lateCount = _presences.where((p) => p['status'] == 'late').length;
+    final absentCount = totalInscrits - _presences.length;
+
+    // Filtered students list
+    final List<Map<String, dynamic>> combinedList = _students.map((student) {
+      final userId = student['users']['id'];
+      final presence = _presences.firstWhere(
+        (p) => p['student_id'] == userId,
+        orElse: () => {'status': 'absent'},
+      );
+      return {
+        ...student,
+        'status': presence['status'],
+      };
+    }).where((s) {
+      final name = '${s['users']['first_name']} ${s['users']['last_name']}'.toLowerCase();
+      final matchesSearch = name.contains(_searchQuery.toLowerCase());
+      
+      if (_activeFilter == 'Tous') return matchesSearch;
+      if (_activeFilter == 'Présents') return matchesSearch && s['status'] == 'present';
+      if (_activeFilter == 'Absents') return matchesSearch && s['status'] == 'absent';
+      if (_activeFilter == 'Retard') return matchesSearch && s['status'] == 'late';
+      return matchesSearch;
+    }).toList();
+
+    if (_students.isEmpty && !_isLoading) {
       return _buildEmptyState();
     }
 
@@ -217,16 +278,16 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.classInfo.title,
+                  matiereName,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: Color(0xFF092C4C), // primary
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.classInfo.filiere} • Filière A',
+                  '${widget.classInfo.title} • ${widget.classInfo.filiere}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF4F4F4F),
@@ -235,9 +296,14 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    _MetaItem(icon: Icons.calendar_today, label: 'Mar 28 Avr'),
+                    _MetaItem(
+                      icon: Icons.calendar_today, 
+                      label: _sessionDetails?['opened_at'] != null 
+                        ? _formatDate(DateTime.parse(_sessionDetails!['opened_at']))
+                        : 'Aujourd\'hui'
+                    ),
                     const SizedBox(width: 12),
-                    _MetaItem(icon: Icons.access_time, label: '10:15 - 12:15'),
+                    _MetaItem(icon: Icons.access_time, label: '$startTime - $endTime'),
                   ],
                 ),
               ],
@@ -255,21 +321,21 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
             crossAxisSpacing: 12,
             childAspectRatio: 2.2,
             children: [
-              _StatBox(value: '42', label: 'Inscrits'),
+              _StatBox(value: '$totalInscrits', label: 'Inscrits'),
               _StatBox(
-                value: '28',
+                value: '$presentCount',
                 label: 'Présents',
                 color: success,
                 bg: successDim,
               ),
               _StatBox(
-                value: '12',
+                value: '$absentCount',
                 label: 'Absents',
                 color: error,
                 bg: errorDim,
               ),
               _StatBox(
-                value: '2',
+                value: '$lateCount',
                 label: 'Retard',
                 color: secondary,
                 bg: secondaryDim,
@@ -291,13 +357,19 @@ class _SessionRecapScreenState extends State<SessionRecapScreen> {
 
           // Student List
           Column(
-            children: widget.classInfo.students
-                .map((s) => _StudentItem(student: s))
+            children: combinedList
+                .map((s) => _StudentItem(studentData: s))
                 .toList(),
           ),
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+    final days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    return '${days[date.weekday - 1]} ${date.day} ${months[date.month - 1]}';
   }
 
   Widget _buildEmptyState() {
@@ -550,12 +622,41 @@ class _Filters extends StatelessWidget {
 }
 
 class _StudentItem extends StatelessWidget {
-  final StudentModel student;
+  final Map<String, dynamic> studentData;
 
-  const _StudentItem({required this.student});
+  const _StudentItem({required this.studentData});
 
   @override
   Widget build(BuildContext context) {
+    final user = studentData['users'] as Map<String, dynamic>;
+    final firstName = user['first_name'] as String? ?? '';
+    final lastName = user['last_name'] as String? ?? '';
+    final name = '$firstName $lastName';
+    final status = studentData['status'] as String? ?? 'absent';
+    
+    final initials = (firstName.isNotEmpty ? firstName[0] : '') + (lastName.isNotEmpty ? lastName[0] : '');
+
+    Color statusColor;
+    Color statusBg;
+    String statusLabel;
+
+    switch (status) {
+      case 'present':
+        statusColor = const Color(0xFF27AE60);
+        statusBg = const Color(0xFFE8F8EF);
+        statusLabel = 'Présent';
+        break;
+      case 'late':
+        statusColor = const Color(0xFFF2994A);
+        statusBg = const Color(0xFFFEF3E7);
+        statusLabel = 'Retard';
+        break;
+      default:
+        statusColor = const Color(0xFFEB5757);
+        statusBg = const Color(0xFFFEECEC);
+        statusLabel = 'Absent';
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -581,7 +682,7 @@ class _StudentItem extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Text(
-              student.initials,
+              initials,
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -595,16 +696,16 @@ class _StudentItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  student.name,
-                  style: TextStyle(
+                  name,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF092C4C),
+                    color: Color(0xFF092C4C),
                   ),
                 ),
-                const Text(
-                  'N° 20240123', // Static for demo
-                  style: TextStyle(fontSize: 11, color: Color(0xFF828282)),
+                Text(
+                  'N° ${user['id'].toString().substring(0, 8)}',
+                  style: const TextStyle(fontSize: 11, color: Color(0xFF828282)),
                 ),
               ],
             ),
@@ -612,26 +713,16 @@ class _StudentItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F8EF),
+              color: statusBg,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Row(
-              children: const [
-                Text(
-                  'Présent',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF27AE60),
-                  ),
-                ),
-                SizedBox(width: 4),
-                Icon(
-                  Icons.keyboard_arrow_down,
-                  size: 12,
-                  color: Color(0xFF27AE60),
-                ),
-              ],
+            child: Text(
+              statusLabel,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: statusColor,
+              ),
             ),
           ),
         ],
