@@ -79,7 +79,7 @@ abstract final class AppTheme {
       color: Colors.white,
       elevation: 0.5,
       margin: EdgeInsets.zero,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(16)),
       ),

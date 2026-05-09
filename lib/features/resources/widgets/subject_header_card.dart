@@ -33,7 +33,7 @@ class SubjectHeaderCard extends StatelessWidget {
                 fontSize: 10,
                 letterSpacing: 1.1,
                 fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface.withOpacity(0.4),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
               ),
             ),
             const SizedBox(height: 4),
@@ -60,7 +60,7 @@ class SubjectHeaderCard extends StatelessWidget {
                   'Partagé avec $classCount classes',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontSize: 12,
-                    color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
               ],

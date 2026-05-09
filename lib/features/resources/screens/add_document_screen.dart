@@ -7,8 +7,8 @@ import '../widgets/class_selection_card.dart';
 import '../widgets/custom_back_button.dart';
 
 class AddDocumentScreen extends StatefulWidget {
-  final String subjectTitle;
-  const AddDocumentScreen({super.key, required this.subjectTitle});
+  final String? subjectTitle;
+  const AddDocumentScreen({super.key, this.subjectTitle});
 
   @override
   State<AddDocumentScreen> createState() => _AddDocumentScreenState();
@@ -18,6 +18,13 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
   // Définition de la couleur principale
   final Color primaryBlue = const Color(0xFF001F3F);
   final TextEditingController _titreController = TextEditingController(); 
+  String? _selectedSubject;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedSubject = widget.subjectTitle;
+  }
 
   // Liste des types de documents
   String typeSelectionne = "Sélectionner un type";
@@ -34,6 +41,13 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
     "L3 Informatique",
     "M1 Ingénierie Logicielle",
     "M2 Cybersécurité",
+  ];
+
+  final List<String> listeDesMatieres = [
+    "Bases de données",
+    "Réseaux",
+    "Microéconomie",
+    "Théorie des Graphes",
   ];
 
   // Liste pour stocker les classes sélectionnées (vide au départ)
@@ -79,6 +93,47 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
                   onTap: () {
                     setState(() {
                       typeSelectionne = type;
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _afficherMenuMatiere() {
+    if (widget.subjectTitle != null) return; // Pas de changement si déjà fixé
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Matière",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              const SizedBox(height: 10),
+              const Divider(),
+              ...listeDesMatieres.map(
+                (matiere) => ListTile(
+                  title: Text(matiere),
+                  trailing: _selectedSubject == matiere
+                      ? Icon(Icons.check_circle, color: primaryBlue)
+                      : null,
+                  onTap: () {
+                    setState(() {
+                      _selectedSubject = matiere;
                     });
                     Navigator.pop(context);
                   },
@@ -166,8 +221,10 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
               // MATIÈRE
               const FormLabel(label: "Matière"),
               const SizedBox(height: 10),
-              // On affiche dynamiquement le titre de la valeur reçue
-              CustomDropdownField(value: widget.subjectTitle),
+              CustomDropdownField(
+                value: _selectedSubject ?? "Sélectionner une matière",
+                onTap: widget.subjectTitle == null ? _afficherMenuMatiere : null,
+              ),
 
               const SizedBox(height: 25),
 
@@ -182,7 +239,7 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
                   isSelected: classesSelectionnees.contains(nomDeLaClasse),
                   onTap: () => toggleSelection(nomDeLaClasse),
                 );
-              }).toList(),
+              }),
 
               const SizedBox(height: 40),
 
@@ -206,6 +263,7 @@ class _AddDocumentScreenState extends State<AddDocumentScreen> {
                     // Vérification simple
                     if (titre.isEmpty ||
                         type == "Sélectionner un type" ||
+                        _selectedSubject == null ||
                         classes.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:syndory_prof/app/theme/app_theme.dart';
+import 'package:syndory_prof/app/theme/app_colors.dart';
 import '../models/resources_models.dart';
 import '../screens/resource_detail_screen.dart';
+import '../screens/add_document_screen.dart';
 import '../widgets/error_state.dart';
 
 
@@ -36,11 +39,8 @@ const List<SubjectResource> _demoSubjects = [
 ];
 
 
-const Color _primaryBlue = Color(0xFF1A2E5A);
-const Color _accentOrange = Color(0xFFF57C2B);
 const Color _tagBlueBg = Color(0xFFE8F0FE);
-const Color _tagBlueText = Color(0xFF1A2E5A);
-const Color _badgeBlueBg = Color(0xFF1A2E5A);
+const Color _badgeBlueBg = AppTheme.primaryBlue;
 const Color _cardBg = Colors.white;
 const Color _scaffoldBg = Color(0xFFF4F5F7);
 const Color _skeletonBase = Color(0xFFE0E4EA);
@@ -93,7 +93,6 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
         ),
       ),
       floatingActionButton: _AddFab(),
-      bottomNavigationBar: _BottomNav(),
     );
   }
 
@@ -122,7 +121,7 @@ class _AppBar extends StatelessWidget {
           const Text(
             'Ressources',
             style: TextStyle(
-              color: _primaryBlue,
+              color: AppTheme.primaryBlue,
               fontSize: 24,
               fontWeight: FontWeight.w800,
             ),
@@ -145,7 +144,7 @@ class _AppBar extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.notifications_outlined,
-                  color: _primaryBlue,
+                  color: AppTheme.primaryBlue,
                   size: 20,
                 ),
               ),
@@ -228,7 +227,7 @@ class _SubjectCard extends StatelessWidget {
                       child: Text(
                         subject.title,
                         style: const TextStyle(
-                          color: _primaryBlue,
+                          color: AppTheme.primaryBlue,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -318,7 +317,7 @@ class _ClassTag extends StatelessWidget {
       child: Text(
         label,
         style: const TextStyle(
-          color: _tagBlueText,
+          color: AppTheme.primaryBlue,
           fontSize: 11,
           fontWeight: FontWeight.w500,
         ),
@@ -449,20 +448,20 @@ class _EmptyState extends StatelessWidget {
               width: 72,
               height: 72,
               decoration: const BoxDecoration(
-                color: Color(0xFFEEEFF2),
+                color: AppColors.gray5,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.menu_book_outlined,
                 size: 32,
-                color: Color(0xFF8A93A2),
+                color: AppColors.gray2,
               ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Aucune matière',
               style: TextStyle(
-                color: _primaryBlue,
+                color: AppTheme.primaryBlue,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -489,76 +488,17 @@ class _AddFab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () {},
-      backgroundColor: _accentOrange,
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AddDocumentScreen(subjectTitle: null),
+          ),
+        );
+      },
+      backgroundColor: AppTheme.primaryOrange,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: const Icon(Icons.add, color: Colors.white, size: 28),
-    );
-  }
-}
-
-
-class _BottomNav extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(icon: Icons.home_outlined,        label: 'Accueil',    active: false),
-              _NavItem(icon: Icons.calendar_today_outlined, label: 'Calendrier', active: false),
-              _NavItem(icon: Icons.layers_outlined,      label: 'Mes cours',  active: false),
-              _NavItem(icon: Icons.folder_outlined,      label: 'Ressources', active: true),
-              _NavItem(icon: Icons.person_outline,       label: 'Profil',     active: false),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.active,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final color = active ? _primaryBlue : Colors.grey.shade400;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 22),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: TextStyle(
-            color: color,
-            fontSize: 10,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w400,
-          ),
-        ),
-      ],
     );
   }
 }

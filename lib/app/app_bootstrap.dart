@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:syndory_prof/features/auth/auth_gate.dart';
 import 'theme/app_theme.dart';
 
-import 'env/app_env.dart';
 import 'errors/missing_supabase_config_screen.dart';
 import '../features/auth/auth_routes.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/resources/screens/resources_screen.dart';
+import '../data/supabase/supabase_client.dart';
 
 const bool _devProfilePreview = bool.fromEnvironment('DEV_PROFILE_PREVIEW');
 
@@ -18,7 +18,9 @@ class AppBootstrap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget home;
-    if (_devResourcesPreview) {
+    if (!SupabaseClientProvider.isInitialized) {
+      home = const MissingSupabaseConfigScreen();
+    } else if (_devResourcesPreview) {
       home = const ResourcesScreen();
     } else if (_devProfilePreview) {
       home = const ProfileScreen();

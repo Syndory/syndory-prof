@@ -7,23 +7,29 @@ import 'app/env/app_env.dart';
 import 'app/app_bootstrap.dart';
 import 'data/supabase/supabase_client.dart';
 
-// Dev auto-login flags — injected at compile time via --dart-define.
+// Dev auto-login flags — injected at compile time via --dart-define or loaded from .env.
 // Never active in release builds.
-const bool _devAutoLogin = bool.fromEnvironment(
-  'DEV_AUTO_LOGIN',
-  defaultValue: false,
-);
-const String _devEmail = String.fromEnvironment(
-  'DEV_LOGIN_EMAIL',
-  defaultValue: 'prof1@syndory.com',
-);
-const String _devPassword = String.fromEnvironment(
-  'DEV_LOGIN_PASSWORD',
-  defaultValue: 'prof123',
-);
+bool get _devAutoLogin {
+  const fromEnv = bool.fromEnvironment('DEV_AUTO_LOGIN', defaultValue: false);
+  if (fromEnv) return true;
+  return AppEnv.dotenvBool('DEV_AUTO_LOGIN');
+}
+
+String get _devEmail {
+  const fromEnv = String.fromEnvironment('DEV_LOGIN_EMAIL');
+  if (fromEnv.isNotEmpty) return fromEnv;
+  return AppEnv.dotenvString('DEV_LOGIN_EMAIL', 'prof1@syndory.com');
+}
+
+String get _devPassword {
+  const fromEnv = String.fromEnvironment('DEV_LOGIN_PASSWORD');
+  if (fromEnv.isNotEmpty) return fromEnv;
+  return AppEnv.dotenvString('DEV_LOGIN_PASSWORD', 'prof123');
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppEnv.load();
 
   if (AppEnv.hasSupabaseConfig) {
     await SupabaseClientProvider.init(

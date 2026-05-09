@@ -4,7 +4,8 @@ import '../../features/classes/classes_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../accueil/accueil_screen.dart';
 import '../../features/calendar/presentation/pages/calendar_screen.dart';
-import '../../shared/widgets/placeholder_screen.dart';
+import '../../features/resources/screens/resources_screen.dart';
+
 
 class MainShell extends StatefulWidget {
   final int initialIndex;
@@ -40,7 +41,8 @@ class _MainShellState extends State<MainShell> {
           AccueilScreen(),
           CalendarScreen(),
           ClassesScreen(),
-          PlaceholderScreen(title: 'Ressources'),
+          ResourcesScreen(),
+
           ProfileScreen(),
         ],
       ),

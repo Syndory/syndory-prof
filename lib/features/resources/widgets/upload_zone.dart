@@ -69,9 +69,9 @@ class _UploadZoneState extends State<UploadZone> {
             height: 150,
             decoration: BoxDecoration(
               color: hasError
-                  ? Colors.red.withOpacity(0.02)
+                  ? Colors.red.withValues(alpha: 0.02)
                   : (_fileName != null
-                        ? Colors.blue.withOpacity(0.05)
+                        ? Colors.blue.withValues(alpha: 0.05)
                         : Colors.grey[50]),
               borderRadius: BorderRadius.circular(12),
               // Bordure rouge pointillée en cas d'erreur
